@@ -1,0 +1,196 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; 
+    margin: 0; 
+    padding: 0;
+    font-family: Arial;
+    font-size: 14px;
+}
+
+main {
+    flex: 1; 
+}
+
+@media print {
+/* General page margin (for all pages except the first) */
+    @page {
+        margin-top: 20mm;
+        margin-bottom: 20mm;
+        margin-left: 20mm;
+        margin-right: 20mm;
+    }
+
+    @page:first {
+        margin-top: 0mm; 
+    }
+
+    body {
+        margin-top: 0;  
+    }
+
+    /* Ensure the header sticks to the top of the first page */
+    header.first-page-header {
+        margin-top: 25px;  
+    }
+
+    .pdf-body {
+        padding-top: 0 !important;
+    }
+}
+
+.header-text {
+    float: right;
+    width: fit-content;
+    margin-top: 16px;
+    font-size: 13px;
+    color: gray;
+}
+
+.header-logo {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}  
+
+.footer-logo {
+    height: 40px;
+    margin-bottom: 8px;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: #f1f1f1;
+    text-align: center;
+    font-size: 12px;
+    line-height: 40px;
+}
+
+h1 {
+    color: black;
+    margin-bottom: 24px;
+    font-weight: 24px;
+    clear: both;
+}
+
+h2 {
+    color: #EE0884;
+    font-size: 20px;
+    margin: 0;
+    margin-bottom: 0;
+    margin-top: 16px;
+}
+
+h3 {
+    color: gray;
+    font-size: 16px;
+    margin-bottom: 0;
+}
+
+p {
+    font-size: 14px;
+    margin-bottom: 4px;
+    margin-top: 4px;
+    padding: 0;
+}
+
+ul, ol {
+    margin-top: 0;
+    margin-left: 0;
+    padding-left: 1.2em;
+    list-style-position: outside; 
+}
+
+li {
+    margin-bottom: 2px;
+    padding: 0;
+    list-style-type: disc;
+}
+
+.two-col {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.two-col .prerequisites {
+    flex: 3;
+    min-width: 0;
+}
+
+.two-col .metadata {
+    flex: 2;
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-left: 5px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.metadata {
+    border-left: 5px solid #999;
+    border-radius: 6px;
+    margin-top: 32px;
+    background-color: #f5f5f5;
+}
+
+.metadata-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0.5em 0;
+  }
+
+.metadata-icon {
+    height: 32px;
+    flex-shrink: 0;
+    margin-right: 10px;
+}
+
+.metadata-key {
+display: flex;
+align-items: center;
+flex-shrink: 0;
+width: 40%;
+}
+
+.metadata-key img {
+height: 20px;
+width: auto;
+margin-right: 6px;
+}
+
+.metadata-value {
+flex: 1; 
+}
+
+.metadata-list {
+    margin: 0.25em 0;
+    padding-left: 1.2em;
+    list-style-type: disc;
+  }
+  
+  .metadata-value ul {
+    margin: 0;
+    padding-left: 1.5em; 
+    list-style-position: outside;
+  }
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+  
+  

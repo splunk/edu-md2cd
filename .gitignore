@@ -1,0 +1,40 @@
+*.env 
+
+# Dev junk
+.idea/
+*.iml
+*.ipr
+*.iws
+*.hprof
+.vscode/
+*.log
+
+# Apple
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+Thumbs.db
+*/libexec/*
+
+# Windows
+~$*
+*.~*
+Thumbs.db
+Desktop.ini
+*.cab
+*.bak
+*.bak2
+*.swp
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock

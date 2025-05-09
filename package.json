@@ -1,0 +1,27 @@
+{
+  "name": "@splunk-edu/md2cd",
+  "version": "1.0.0",
+  "description": "Convert Markdown to Splunk EDU course descriptions in PDF format.",
+  "main": "./src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "md2cd": "./src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:splunk/edu-md2cd.git"
+  },
+  "author": "Splunk EDU",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "commander": "^13.1.0",
+    "gray-matter": "^4.0.3",
+    "marked": "^15.0.11",
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^24.7.2",
+    "recursive-readdir": "^2.2.3"
+  }
+}
