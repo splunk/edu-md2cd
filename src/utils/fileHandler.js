@@ -1,6 +1,5 @@
 import fs from "fs/promises";
 import path from "path";
-import matter from "gray-matter";
 
 export async function readMarkdownFile(sourcePath) {
   const files = await fs.readdir(sourcePath);
@@ -13,15 +12,13 @@ export async function readMarkdownFile(sourcePath) {
   }
 
   const filePath = path.join(sourcePath, match);
-  const rawContent = await fs.readFile(filePath, "utf-8");
-
-  const { content, data: metadata } = matter(rawContent);
+  const content = await fs.readFile(filePath, "utf-8");
 
   if (!content.trim()) {
     throw new Error("Markdown file is empty.");
   }
 
-  return { content, metadata, filePath };
+  return { content, filePath };
 }
 
 export function getOutputPath(sourcePath) {

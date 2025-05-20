@@ -14,29 +14,35 @@ import {
 
 import { generateHTML } from "./generators/htmlGenerator.js";
 import { generatePDF } from "./generators/pdfGenerator.js";
-import { logEvent } from "./utils/logger.js";
+import logger from "./utils/logger.js";
+
+import { getMetadataPath, loadMetadata } from "./utils/metadataHandler.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function convertMarkdownToPDF(sourcePath, options = {}) {
+async function convertMarkdownToPDF(sourceDir, options = {}) {
   try {
-    await validateSourcePath(sourcePath);
-    const { content, metadata, filePath } = await readMarkdownFile(sourcePath);
+    await validateSourcePath(sourceDir);
+    const { content, filePath } = await readMarkdownFile(sourceDir);
+
+    // GET META!
+    const metadataPath = await getMetadataPath(sourceDir);
+    const metadata = await loadMetadata(metadataPath);
 
     if (options.verbose) {
       console.log("📝 Metadata:", metadata);
       console.log("📄 Markdown preview:", content.slice(0, 200), "...");
     }
 
-    const html = generateHTML(content, metadata, sourcePath);
+    const html = generateHTML(content, metadata, sourceDir);
 
     if (options.dryRun) {
       console.log(
         `🧪 Dry run: would generate PDF for ${metadata.course_id} - ${metadata.course_title}`
       );
       if (options.log) {
-        logEvent(
+        logger(
           {
             timestamp: new Date().toISOString(),
             file: filePath,
@@ -50,7 +56,7 @@ async function convertMarkdownToPDF(sourcePath, options = {}) {
       return;
     }
 
-    await ensurePDFDirectoryExists(sourcePath);
+    await ensurePDFDirectoryExists(sourceDir);
 
     const safeTitle =
       metadata.course_id.toString() +
@@ -58,20 +64,21 @@ async function convertMarkdownToPDF(sourcePath, options = {}) {
       metadata.course_title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-+|-+$)/g, "");
+        .replace(/(^-+|-+$)/g, "") +
+      "-" +
+      metadata.version;
 
     const outputPath = path.join(
-      sourcePath,
+      sourceDir,
       "pdfs",
       `${safeTitle}-course-description.pdf`
     );
 
+    logger.info(`⚙️  Generating PDF ${outputPath}`);
     await generatePDF(html, outputPath);
 
-    console.log(`✅ PDF created at: ${outputPath}`);
-
     if (options.log) {
-      logEvent(
+      logger(
         {
           timestamp: new Date().toISOString(),
           file: filePath,
@@ -87,10 +94,10 @@ async function convertMarkdownToPDF(sourcePath, options = {}) {
     console.error("❌ Error:", err.message);
 
     if (options.log) {
-      logEvent(
+      logger(
         {
           timestamp: new Date().toISOString(),
-          file: sourcePath,
+          file: sourceDir,
           status: "error",
           error: err.message,
         },
@@ -129,21 +136,25 @@ const program = new Command();
 program
   .name("md2cd")
   .description("Convert Markdown course descriptions to PDF")
-  .argument("<sourcePath>", "Path to a course folder or root directory")
+  .argument(
+    "[sourceDir]",
+    "Path to a course folder or root directory",
+    process.cwd()
+  )
   .option(
     "-r, --recursive",
-    "Recursively convert all '-course-description.md' files"
+    "recursively convert all '-course-description.md' files in a given directory"
   )
   .option(
     "-d, --dry-run",
-    "List files that would be converted but don't generate output"
+    "list files that would be converted without generating output"
   )
-  .option("-v, --verbose", "Enable detailed logging to console")
-  .option("-l, --log <file>", "Path to output log file")
+  .option("-v, --verbose", "enable detailed logging to console")
+  // .option("-l, --log <file>", "generate a log file; expects output path")
   .version("1.0.0");
 
-program.action(async (sourcePath, options) => {
-  const absolutePath = path.resolve(sourcePath);
+program.action(async (sourceDir, options) => {
+  const absolutePath = path.resolve(sourceDir);
 
   let resolvedLogPath = undefined;
   if (options.log) {

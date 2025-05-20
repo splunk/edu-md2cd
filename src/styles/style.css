@@ -89,13 +89,13 @@ h2 {
 h3 {
     color: gray;
     font-size: 16px;
-    margin-bottom: 0;
+    margin-bottom: 8px;
 }
 
 p {
     font-size: 14px;
     margin-bottom: 4px;
-    margin-top: 4px;
+    margin-top: 8px;
     padding: 0;
 }
 

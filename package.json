@@ -1,6 +1,6 @@
 {
   "name": "@splunk-edu/md2cd",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Convert Markdown to Splunk EDU course descriptions in PDF format.",
   "main": "./src/index.js",
   "type": "module",
@@ -18,7 +18,6 @@
   "license": "UNLICENSED",
   "dependencies": {
     "commander": "^13.1.0",
-    "gray-matter": "^4.0.3",
     "marked": "^15.0.11",
     "pdf-lib": "^1.17.1",
     "puppeteer": "^24.7.2",
