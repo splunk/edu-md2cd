@@ -32,7 +32,7 @@ async function convertMarkdownToPDF(sourceDir, options = {}) {
 
     if (options.verbose) {
       console.log("📝 Metadata:", metadata);
-      console.log("📄 Markdown preview:", content.slice(0, 200), "...");
+      // console.log("📄 Markdown preview:", content.slice(0, 200), "...");
     }
 
     const html = generateHTML(content, metadata, sourceDir);
@@ -138,8 +138,8 @@ program
   .description("Convert Markdown course descriptions to PDF")
   .argument(
     "[sourceDir]",
-    "Path to a course folder or root directory",
-    process.cwd()
+    "Path to a course folder or root directory"
+    // process.cwd()
   )
   .option(
     "-r, --recursive",
@@ -148,12 +148,12 @@ program
   .option(
     "-d, --dry-run",
     "list files that would be converted without generating output"
-  )
-  .option("-v, --verbose", "enable detailed logging to console")
-  // .option("-l, --log <file>", "generate a log file; expects output path")
-  .version("1.0.0");
+  );
+// .option("-v, --verbose", "enable detailed logging to console");
+// .option("-l, --log <file>", "generate a log file; expects output path")
+// .version("1.0.0");
 
-program.action(async (sourceDir, options) => {
+program.action(async (sourceDir = ".", options) => {
   const absolutePath = path.resolve(sourceDir);
 
   let resolvedLogPath = undefined;

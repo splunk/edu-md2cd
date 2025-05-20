@@ -55,7 +55,8 @@ export async function generatePDF(htmlContent, outputPath) {
   const logoBytes = fs.readFileSync(FOOTER_LOGO_PATH);
   const image = await pdfDoc.embedPng(logoBytes);
 
-  const maxFooterWidth = 481.9; // A4 page width minus margins
+  // A4 page width minus margins = 481.9
+  const maxFooterWidth = 481.9;
   const scale = maxFooterWidth / image.width;
   const pngDims = image.scale(scale);
 

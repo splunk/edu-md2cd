@@ -31,7 +31,7 @@ main {
 
     /* Ensure the header sticks to the top of the first page */
     header.first-page-header {
-        margin-top: 25px;  
+        margin-top: 32px;  
     }
 
     .pdf-body {
