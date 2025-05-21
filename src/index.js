@@ -16,7 +16,14 @@ import { generateHTML } from "./generators/htmlGenerator.js";
 import { generatePDF } from "./generators/pdfGenerator.js";
 import logger from "./utils/logger.js";
 
-import { getMetadataPath, loadMetadata } from "./utils/metadataHandler.js";
+import {
+  getMetadataPath,
+  loadMetadata,
+  getCourseId,
+  getCourseTitle,
+  getProductVersion,
+  slugify,
+} from "./utils/metadataHandler.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,43 +37,45 @@ async function convertMarkdownToPDF(sourceDir, options = {}) {
     const metadataPath = await getMetadataPath(sourceDir);
     const metadata = await loadMetadata(metadataPath);
 
-    if (options.verbose) {
-      console.log("📝 Metadata:", metadata);
-      // console.log("📄 Markdown preview:", content.slice(0, 200), "...");
+    let courseId, courseTitle, productVersion;
+
+    try {
+      courseId = getCourseId(metadata);
+      courseTitle = getCourseTitle(metadata);
+      productVersion = getProductVersion(metadata);
+    } catch (err) {
+      logger.error(`Uh oh! ${err.message}`);
+      process.exit(1);
     }
+
+    // if (options.verbose) {
+    //   console.log("📝 Metadata:", metadata);
+    // }
 
     const html = generateHTML(content, metadata, sourceDir);
 
     if (options.dryRun) {
-      console.log(
-        `🧪 Dry run: would generate PDF for ${metadata.course_id} - ${metadata.course_title}`
-      );
-      if (options.log) {
-        logger(
-          {
-            timestamp: new Date().toISOString(),
-            file: filePath,
-            course_id: metadata.course_id,
-            course_title: metadata.course_title,
-            status: "dry-run",
-          },
-          options.log
-        );
-      }
+      console.log(`🧪 Will generate PDF for ${courseId}-${courseTitle}`);
+      // if (options.log) {
+      //   logger(
+      //     {
+      //       timestamp: new Date().toISOString(),
+      //       file: filePath,
+      //       course_id: metadata.course_id,
+      //       course_title: metadata.course_title,
+      //       status: "dry-run",
+      //     },
+      //     options.log
+      //   );
+      // }
       return;
     }
 
     await ensurePDFDirectoryExists(sourceDir);
 
+    // Con🐈enate output title
     const safeTitle =
-      metadata.course_id.toString() +
-      "-" +
-      metadata.course_title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-+|-+$)/g, "") +
-      "-" +
-      metadata.version;
+      courseId + "-" + slugify(courseTitle) + "-" + productVersion;
 
     const outputPath = path.join(
       sourceDir,
@@ -74,6 +83,7 @@ async function convertMarkdownToPDF(sourceDir, options = {}) {
       `${safeTitle}-course-description.pdf`
     );
 
+    // Generate!
     logger.info(`⚙️  Generating PDF ${outputPath}`);
     await generatePDF(html, outputPath);
 
@@ -91,19 +101,19 @@ async function convertMarkdownToPDF(sourceDir, options = {}) {
       );
     }
   } catch (err) {
-    console.error("❌ Error:", err.message);
+    logger.error("Error:", err.message);
 
-    if (options.log) {
-      logger(
-        {
-          timestamp: new Date().toISOString(),
-          file: sourceDir,
-          status: "error",
-          error: err.message,
-        },
-        options.log
-      );
-    }
+    // if (options.log) {
+    //   logger(
+    //     {
+    //       timestamp: new Date().toISOString(),
+    //       file: sourceDir,
+    //       status: "error",
+    //       error: err.message,
+    //     },
+    //     options.log
+    //   );
+    // }
   }
 }
 

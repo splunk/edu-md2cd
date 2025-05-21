@@ -7,7 +7,7 @@ export async function readMarkdownFile(sourcePath) {
 
   if (!match) {
     throw new Error(
-      `No file ending with 'course-description.md' found in: ${sourcePath}`
+      `No file ending with 'course-description.md' found in ${sourcePath}`
     );
   }
 

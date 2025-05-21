@@ -3,6 +3,14 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { marked } from "marked";
 
+import {
+  getCourseAudience,
+  getCourseDuration,
+  getCourseFormat,
+} from "../utils/metadataHandler.js";
+
+import logger from "../utils/logger.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ASSETS_DIR = path.join(__dirname, "../assets");
@@ -25,7 +33,18 @@ const iconAudience = `data:image/png;base64,${getBase64Image(
   "icon-audience.png"
 )}`;
 
-function extractAndRenderPrerequisites(markdownText, metadata = {}) {
+function extractAndRenderPrerequisites(markdownText, metadata) {
+  let courseFormat, courseDuration, courseAudience;
+
+  try {
+    courseFormat = getCourseFormat(metadata);
+    courseDuration = getCourseDuration(metadata);
+    courseAudience = getCourseAudience(metadata);
+  } catch (err) {
+    logger.error(`Uh oh! ${err.message}`);
+    process.exit(1);
+  }
+
   const lines = markdownText.replace(/\r\n/g, "\n").split("\n");
 
   let startIndex = -1;
@@ -55,29 +74,29 @@ function extractAndRenderPrerequisites(markdownText, metadata = {}) {
   const metadataHTML = `
     <div class="metadata">
       ${
-        metadata.format
+        courseFormat
           ? `<p class="metadata-line">
               <span class="metadata-key">
                 <img src="${iconFormat}" class="metadata-icon" alt="icon" />
                 <strong>Format:</strong>
               </span>
-              <span class="metadata-value">${metadata.format}</span>
+              <span class="metadata-value">${courseFormat}</span>
             </p>`
           : ""
       }
       ${
-        metadata.duration
+        courseDuration
           ? `<p class="metadata-line">
               <span class="metadata-key">
                 <img src="${iconDuration}" class="metadata-icon" alt="icon" />
                 <strong>Duration:</strong>
               </span>
-              <span class="metadata-value">${metadata.duration}</span>
+              <span class="metadata-value">${courseDuration}</span>
             </p>`
           : ""
       }
       ${
-        metadata.audience && Array.isArray(metadata.audience)
+        courseAudience && Array.isArray(courseAudience)
           ? `<div class="metadata-line">
               <span class="metadata-key">
                 <img src="${iconAudience}" class="metadata-icon" alt="icon" />
@@ -85,13 +104,13 @@ function extractAndRenderPrerequisites(markdownText, metadata = {}) {
               </span>
               <div class="metadata-value">
                 ${
-                  metadata.audience.length > 1
+                  courseAudience.length > 1
                     ? `<ul class="metadata-list">
-                        ${metadata.audience
+                        ${courseAudience
                           .map((item) => `<li>${item}</li>`)
                           .join("")}
                       </ul>`
-                    : `<span>${metadata.audience[0]}</span>`
+                    : `<span>${courseAudience[0]}</span>`
                 }
               </div>
             </div>`

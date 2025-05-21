@@ -4,13 +4,51 @@ import yaml from "js-yaml";
 import logger from "./logger.js";
 
 export function getCourseTitle(metadata) {
-  try {
-    const courseTitle = metadata.course_title;
-    return courseTitle;
-  } catch (err) {
-    logger.error("'course_title' not found in metadata");
-    process.exit(1);
+  const courseTitle = metadata?.course_title;
+  if (courseTitle === undefined) {
+    throw new Error("No 'course_title' found in the metadata");
   }
+  return courseTitle;
+}
+
+export function getCourseId(metadata) {
+  const courseId = metadata?.course_id;
+  if (courseId === undefined) {
+    throw new Error("No 'course_id' found in the metadata");
+  }
+  return courseId;
+}
+
+export function getProductVersion(metadata) {
+  const productVersion = metadata?.version;
+  if (productVersion === undefined) {
+    throw new Error("No 'version' found in the metadata");
+  }
+  return productVersion;
+}
+
+export function getCourseFormat(metadata) {
+  const courseFormat = metadata?.format;
+  if (courseFormat === undefined) {
+    throw new Error("No 'format' found in the metadata");
+  }
+  return courseFormat;
+}
+
+export function getCourseDuration(metadata) {
+  const courseDuration = metadata?.duration;
+  if (courseDuration === undefined) {
+    throw new Error("No 'duration' found in the metadata");
+  }
+  return courseDuration;
+}
+
+export function getCourseAudience(metadata) {
+  const courseAudience = metadata?.audience;
+  if (courseAudience === undefined) {
+    throw new Error("No 'audience' found in the metadata");
+  }
+  return courseAudience;
 }
 
 export function slugify(text) {
@@ -63,6 +101,8 @@ export async function updateMetadataDate(metadataPath, metadata, updatedDate) {
   if (metadata.course_id) {
     metadata.course_id = metadata.course_id.toString().padStart(4, "0");
   }
+
+  metadata.updated = updatedDate;
 
   const newYaml = yaml.dump(metadata);
   await fs.writeFile(metadataPath, newYaml, "utf8");
