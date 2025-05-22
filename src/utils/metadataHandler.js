@@ -19,12 +19,12 @@ export function getCourseId(metadata) {
   return courseId;
 }
 
-export function getProductVersion(metadata) {
-  const productVersion = metadata?.version;
-  if (productVersion === undefined) {
-    throw new Error("No 'version' found in the metadata");
-  }
-  return productVersion;
+export function getVersion(metadata) {
+  const version = metadata?.version;
+  // if (version === undefined) {
+  //   throw new Error("No 'version' found in the metadata");
+  // }
+  return version;
 }
 
 export function getCourseFormat(metadata) {

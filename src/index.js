@@ -21,7 +21,7 @@ import {
   loadMetadata,
   getCourseId,
   getCourseTitle,
-  getProductVersion,
+  getVersion,
   slugify,
 } from "./utils/metadataHandler.js";
 
@@ -37,15 +37,20 @@ async function convertMarkdownToPDF(sourceDir, options = {}) {
     const metadataPath = await getMetadataPath(sourceDir);
     const metadata = await loadMetadata(metadataPath);
 
-    let courseId, courseTitle, productVersion;
+    let courseId, courseTitle;
 
     try {
       courseId = getCourseId(metadata);
       courseTitle = getCourseTitle(metadata);
-      productVersion = getProductVersion(metadata);
     } catch (err) {
       logger.error(`Uh oh! ${err.message}`);
       process.exit(1);
+    }
+
+    const version = getVersion(metadata);
+
+    if (!version) {
+      logger.info("ℹ️  No 'version' found in metadata. Proceeding without it.");
     }
 
     // if (options.verbose) {
@@ -73,15 +78,16 @@ async function convertMarkdownToPDF(sourceDir, options = {}) {
 
     await ensurePDFDirectoryExists(sourceDir);
 
-    // Con🐈enate output title
-    const safeTitle =
-      courseId + "-" + slugify(courseTitle) + "-" + productVersion;
+    const slug = slugify(courseTitle);
 
-    const outputPath = path.join(
-      sourceDir,
-      "pdfs",
-      `${safeTitle}-course-description.pdf`
-    );
+    // Con🐈enate output title
+    const outputTitle = `${courseId}-${slug}${
+      version ? "-" + version : ""
+    }-course-description.pdf`;
+
+    // const outputTitle = courseId + "-" + slugify(courseTitle) + "-" + version;
+
+    const outputPath = path.join(sourceDir, "pdfs", outputTitle);
 
     // Generate!
     logger.info(`⚙️  Generating PDF ${outputPath}`);
