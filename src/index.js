@@ -6,7 +6,6 @@ import { Command } from "commander";
 
 import {
   readMarkdownFile,
-  getOutputPath,
   ensurePDFDirectoryExists,
   validateSourcePath,
   findMarkdownFiles,
@@ -76,7 +75,7 @@ async function convertMarkdownToPDF(sourceDir, options = {}) {
       return;
     }
 
-    await ensurePDFDirectoryExists(sourceDir);
+    // await ensurePDFDirectoryExists(sourceDir);
 
     const slug = slugify(courseTitle);
 
@@ -87,7 +86,7 @@ async function convertMarkdownToPDF(sourceDir, options = {}) {
 
     // const outputTitle = courseId + "-" + slugify(courseTitle) + "-" + version;
 
-    const outputPath = path.join(sourceDir, "pdfs", outputTitle);
+    const outputPath = path.join(sourceDir, outputTitle);
 
     // Generate!
     logger.info(`⚙️  Generating PDF ${outputPath}`);

@@ -79,7 +79,10 @@ h1 {
 }
 
 h2 {
+    /* Splunk pink */
     color: #EE0884;
+    /* Cisco blue */
+    /* color: #049fd9; */
     font-size: 20px;
     margin: 0;
     margin-bottom: 0;
