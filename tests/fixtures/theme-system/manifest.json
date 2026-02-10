@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "courseId": "1234",
+    "courseTitle": "Themes Course",
+    "slug": "themes-course",
+    "description": "Themes fun!",
+    "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
+    "modality": "ILT",
+    "duration": "13.5 hours",
+    "audience": {
+      "role": ["sysadmin", "power user"],
+      "internal": ["professional services", "sales engineer"],
+      "external": ["customer-facing", "partners"]
+    },
+    "ga": "2025-11-01",
+    "updated": "2026-01-21",
+    "splunk": {
+      "platform": {
+        "deployment": "Cloud",
+        "version": "10.2.1"
+      }
+    }
+  },
+  "output": {
+    "theme": "cisco"
+  }
+}

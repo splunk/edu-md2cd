@@ -1,0 +1,24 @@
+{
+  "metadata": {
+    "courseId": "1234",
+    "courseTitle": "Introduction to Recursion",
+    "slug": "introduction-to-recursion",
+    "description": "Recursive fun!",
+    "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
+    "modality": "ILT",
+    "duration": "13.5 hours",
+    "audience": {
+      "role": ["sysadmin", "power user"],
+      "internal": ["professional services", "sales engineer"],
+      "external": ["customer-facing", "partners"]
+    },
+    "ga": "2025-11-01",
+    "updated": "2026-01-21",
+    "splunk": {
+      "platform": {
+        "deployment": "Cloud",
+        "version": "10.2.1"
+      }
+    }
+  }
+}

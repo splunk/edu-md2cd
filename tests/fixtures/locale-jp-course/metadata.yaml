@@ -1,0 +1,12 @@
+course_id: '1001'
+course_title: 'Splunk Cloud Administration'
+slug: 'sca'
+version: '9.4'
+course_developer: 'Splunk EDU'
+format: 'Instructor-Led Training'
+duration: '18 hr'
+audience:
+    - Splunk Cloud Administrators
+updated: '2026-02-02'
+output:
+    - cd

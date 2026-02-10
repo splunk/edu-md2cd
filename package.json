@@ -21,6 +21,7 @@
     "marked": "^15.0.11",
     "pdf-lib": "^1.17.1",
     "puppeteer": "^24.7.2",
-    "recursive-readdir": "^2.2.3"
+    "recursive-readdir": "^2.2.3",
+    "yaml": "^2.8.2"
   }
 }

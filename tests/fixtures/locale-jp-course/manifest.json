@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "courseId": "1001",
+    "courseTitle": "Splunk Cloud Administration",
+    "slug": "sca",
+    "courseDeveloper": "Splunk EDU",
+    "modality": "ILT",
+    "duration": "18 hr",
+    "audience": {
+      "role": ["Splunk Cloud Administrators"],
+      "internal": [],
+      "external": []
+    },
+    "updated": "2026-02-02",
+    "splunk": {
+      "platform": {
+        "deployment": "Cloud",
+        "version": "9.4"
+      }
+    }
+  },
+  "plugins": [
+    {
+      "name": "locale-jp",
+      "translations": {
+        "audience": "Splunkクラウド管理者",
+        "duration": "18時間"
+      }
+    }
+  ],
+  "output": {
+    "destination": "dist",
+    "theme": "cisco"
+  }
+}
