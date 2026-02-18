@@ -42,7 +42,7 @@ async function addGradientFooter(pdfDoc, logoBuffer, config) {
     const pages = pdfDoc.getPages();
     const lastPage = pages[pages.length - 1];
     const { width } = lastPage.getSize();
-    
+
     const gradientColors = config.footer.gradient.colors;
     const footerHeight = config.footer.gradient.height;
     const footerY = config.footer.position.y;
@@ -59,7 +59,7 @@ async function addGradientFooter(pdfDoc, logoBuffer, config) {
             const lastColor = gradientColors[gradientColors.length - 1];
             lastPage.drawRectangle({
                 x: 0,
-                y: footerY + (i * stripeHeight),
+                y: footerY + i * stripeHeight,
                 width: width,
                 height: stripeHeight + 0.5,
                 color: rgb(lastColor[0] / 255, lastColor[1] / 255, lastColor[2] / 255),
@@ -76,7 +76,7 @@ async function addGradientFooter(pdfDoc, logoBuffer, config) {
 
         lastPage.drawRectangle({
             x: 0,
-            y: footerY + (i * stripeHeight),
+            y: footerY + i * stripeHeight,
             width: width,
             height: stripeHeight + 0.5,
             color: rgb(r / 255, g / 255, b / 255),
@@ -87,10 +87,11 @@ async function addGradientFooter(pdfDoc, logoBuffer, config) {
     const targetLogoWidth = config.footer.logoPlacement.width;
     const scale = targetLogoWidth / logoImage.width;
     const logoDims = logoImage.scale(scale);
-    
-    const logoX = config.footer.logoPlacement.side === 'right' 
-        ? width - logoDims.width - config.footer.logoPlacement.margin
-        : config.footer.logoPlacement.margin;
+
+    const logoX =
+        config.footer.logoPlacement.side === 'right'
+            ? width - logoDims.width - config.footer.logoPlacement.margin
+            : config.footer.logoPlacement.margin;
     const logoY = footerY + (footerHeight - logoDims.height) / 2;
 
     lastPage.drawImage(logoImage, {
@@ -113,13 +114,13 @@ async function addCenteredLogoFooter(pdfDoc, logoBuffer, config) {
 
     const pages = pdfDoc.getPages();
     const lastPage = pages[pages.length - 1];
-    
+
     // Content width: Letter (612pt) minus 20mm margins on each side (20mm ≈ 56.7pt)
     // 612 - (2 * 56.7) = 498.6 points
     const contentWidth = config.footer.width === 'content-width' ? 499 : config.footer.width;
     const scale = contentWidth / logoImage.width;
     const logoDims = logoImage.scale(scale);
-    
+
     const { width } = lastPage.getSize();
     const logoX = (width - logoDims.width) / 2;
     const logoY = config.footer.position.y;
@@ -142,7 +143,7 @@ export async function addFooterWithLogo(pdfBuffer, themeName) {
     const pdfDoc = await PDFDocument.load(pdfBuffer);
 
     const config = await loadThemeConfig(themeName);
-    
+
     // Skip footer if theme doesn't define one
     if (!config.footer || !config.footer.type) {
         return await pdfDoc.save();

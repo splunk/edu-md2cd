@@ -14,11 +14,13 @@ const DEFAULT_THEME = 'splunk-edu';
  */
 export async function loadThemeConfig(themeName = DEFAULT_THEME) {
     const configPath = path.join(getThemeDir(themeName), 'theme.config.js');
-    
+
     if (!fs.existsSync(configPath)) {
-        throw new Error(`Theme configuration not found: ${themeName}. Expected config at ${configPath}`);
+        throw new Error(
+            `Theme configuration not found: ${themeName}. Expected config at ${configPath}`,
+        );
     }
-    
+
     const configModule = await import(configPath);
     return configModule.default;
 }

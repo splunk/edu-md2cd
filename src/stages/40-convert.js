@@ -31,7 +31,12 @@ export class ConvertStage extends Stage {
             const mainHtml = convertToHtml(cleanedMarkdown);
 
             // Build complete HTML document (buildFullHtml handles prerequisites + metadata internally)
-            const html = await buildFullHtml(context.manifest, mainHtml, context.theme, prereqMarkdown);
+            const html = await buildFullHtml(
+                context.manifest,
+                mainHtml,
+                context.theme,
+                prereqMarkdown,
+            );
             context.html = html;
 
             logger.info(`  Generated HTML (${html.length} bytes)`);

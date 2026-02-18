@@ -1,5 +1,6 @@
 import { Stage } from '../pipeline.js';
 import { getManifestPath, loadManifest } from '../utils/metadataHandler.js';
+import { validateManifest, formatValidationErrors } from '../utils/validator.js';
 import logger from '../utils/logger.js';
 
 /**
@@ -24,14 +25,27 @@ export class LoadStage extends Stage {
             context.manifest = manifest;
             context.metadata = manifest.metadata;
 
+            // Validate manifest against schema
+            const validation = validateManifest(manifest);
+            if (!validation.valid) {
+                const errorMessages = formatValidationErrors(validation.errors);
+                logger.error('Manifest validation failed:');
+                errorMessages.forEach((msg) => logger.error(`  ${msg}`));
+                throw new Error('Manifest validation failed. Please fix the errors above.');
+            }
+            logger.info('✓ Manifest validated');
+
             // Extract plugins if specified
             if (manifest.plugins && Array.isArray(manifest.plugins)) {
                 context.plugins = manifest.plugins;
                 logger.info(`  Found ${manifest.plugins.length} plugin(s)`);
             }
 
-            // Extract theme if specified
-            if (manifest.output?.theme) {
+            // Extract theme: CLI --theme overrides manifest, which overrides default
+            if (context.options.theme) {
+                context.theme = context.options.theme;
+                logger.info(`  Theme: ${context.theme} (CLI override)`);
+            } else if (manifest.output?.theme) {
                 context.theme = manifest.output.theme;
                 logger.info(`  Theme: ${context.theme}`);
             } else {

@@ -32,10 +32,10 @@ export default {
 
         // Japanese UI labels
         labels: {
-            format: '形式', // Format
-            // duration: '時間',
-            duration: '期限', // Duration
-            audience: '対象者', // Audience
+            format: '形式',
+            duration: '時間',
+            // duration: '期限',
+            audience: '対象者',
         },
 
         // Built-in value translations for standardized terms

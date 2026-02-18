@@ -22,9 +22,9 @@
     }
   },
   "output": {
-    "destination": "./dist",
+    "destination": "./custom-directory",
     "pdfs": {
-      "courseDescription": "custom-output-course-description.pdf"
+      "courseDescription": "custom-filename.pdf"
     }
   }
 }

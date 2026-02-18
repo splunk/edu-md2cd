@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import logger from './logger.js';
 
 export async function readMarkdownFile(sourcePath, manifest = null) {
     let filePath;
@@ -16,7 +17,10 @@ export async function readMarkdownFile(sourcePath, manifest = null) {
         try {
             await fs.access(filePath);
         } catch (err) {
-            throw new Error(`Course description file specified in manifest not found: ${filePath}`);
+            throw new Error(
+                `Course description file specified in manifest not found: ${filePath}`,
+                { cause: err },
+            );
         }
     } else {
         // Fallback to default behavior: find any file ending with "course-description.md"
@@ -47,7 +51,7 @@ export async function ensurePDFDirectoryExists(dirPath) {
     try {
         await fs.mkdir(dirPath, { recursive: true });
     } catch (err) {
-        throw new Error(`Failed to create output directory: ${err.message}`);
+        throw new Error(`Failed to create output directory: ${err.message}`, { cause: err });
     }
 }
 
@@ -76,7 +80,7 @@ export async function findMarkdownFiles(dir, pattern = 'course-description.md', 
             }
         }
     } catch (err) {
-        console.error('❌ Error reading directory:', err.message);
+        logger.error('Error reading directory:', err.message);
     }
 
     return results;

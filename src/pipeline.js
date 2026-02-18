@@ -39,7 +39,7 @@ export class Pipeline {
                     });
                 }
             } catch (error) {
-                logger.error(`❌ Pipeline failed at stage: ${stageName}`);
+                logger.error(`Pipeline failed at stage: ${stageName}`);
                 throw error;
             }
         }
@@ -70,7 +70,7 @@ export class Stage {
      * @param {Context} context - Context object
      * @returns {Promise<void>}
      */
-    async execute(context) {
+    async execute(_context) {
         throw new Error(`Stage ${this.name} must implement execute() method`);
     }
 }

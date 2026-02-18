@@ -2,7 +2,7 @@
   "metadata": {
     "courseId": "1234",
     "courseTitle": "Custom Input",
-    "slug": "custom-input-course",
+    "slug": "custom-input",
     "description": "Custom fun!",
     "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
     "modality": "ILT",
@@ -22,6 +22,6 @@
     }
   },
   "input": {
-    "courseDescription": "./custom-input.md"
+    "courseDescription": "./custom-filename.md"
   }
 }

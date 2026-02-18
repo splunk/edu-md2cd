@@ -20,16 +20,14 @@ export class BuildStage extends Stage {
 
         try {
             // Determine output filename
-            const courseId = getCourseId(context.manifest);
             const courseTitle = getCourseTitle(context.manifest);
-            const version = getVersion(context.manifest);
             const slug = slugify(courseTitle);
 
             let outputFilename;
             if (context.customOutputFilename) {
                 outputFilename = context.customOutputFilename;
             } else {
-                outputFilename = `${courseId}-${slug}${version ? '-' + version : ''}-course-description.pdf`;
+                outputFilename = `${slug}-course-description.pdf`;
             }
 
             // Determine output directory
@@ -58,7 +56,7 @@ export class BuildStage extends Stage {
             // Write PDF to disk
             await fs.writeFile(context.outputPath, pdfBuffer);
 
-            logger.info(`  ✅ PDF generated successfully`);
+            logger.info(`✅ PDF generated successfully`);
         } catch (error) {
             context.addError(error.message, this.name);
             throw error;

@@ -40,36 +40,6 @@
     "destination": "./dist",
     "pdfs": {
       "courseDescription": "locale-jp-course-guide.pdf"
-    },
-    "app": {
-      "nav": [
-        {
-          "type": "view",
-          "name": "00-introduction",
-          "default": true
-        },
-        {
-          "type": "collection",
-          "views": [
-            "01-admonitions",
-            "02-answers",
-            "03-custom-admos",
-            "04-components",
-            "05-custom-components",
-            "06-splunk-integration",
-            "07-videos"
-          ],
-          "label": "Lab Guides"
-        },
-        {
-          "type": "view",
-          "name": "98-resources"
-        },
-        {
-          "type": "view",
-          "name": "99-downloads"
-        }
-      ]
     }
   }
 }

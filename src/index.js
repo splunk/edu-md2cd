@@ -1,7 +1,4 @@
-#!/usr/bin/env node
-
 import path from 'path';
-import { Command } from 'commander';
 import { validateSourcePath, findMarkdownFiles } from './utils/fileHandler.js';
 import logger from './utils/logger.js';
 import { Context } from './context.js';
@@ -17,7 +14,7 @@ import { BuildStage } from './stages/50-build.js';
 /**
  * Convert a single markdown file to PDF using the pipeline
  */
-async function convertMarkdownToPDF(sourceDir, options = {}, flatOutputRoot = null) {
+export async function convertMarkdownToPDF(sourceDir, options = {}, flatOutputRoot = null) {
     try {
         await validateSourcePath(sourceDir);
 
@@ -50,7 +47,7 @@ async function convertMarkdownToPDF(sourceDir, options = {}, flatOutputRoot = nu
             const courseId = context.metadata?.courseId || context.metadata?.id || 'unknown';
             const courseTitle =
                 context.metadata?.courseTitle || context.metadata?.title || 'Unknown';
-            console.log(`🧪 Will generate PDF for ${courseId}-${courseTitle}`);
+            logger.info(`Will generate PDF for ${courseId}-${courseTitle}`);
             return;
         }
 
@@ -73,76 +70,58 @@ async function convertMarkdownToPDF(sourceDir, options = {}, flatOutputRoot = nu
 /**
  * Convert multiple markdown files recursively
  */
-async function convertAllMarkdownFiles(rootPath, options = {}) {
+export async function convertAllMarkdownFiles(rootPath, options = {}) {
     const files = await findMarkdownFiles(rootPath);
 
     if (files.length === 0) {
-        console.log('No matching Markdown files found.');
+        logger.info('No matching Markdown files found.');
         return;
     }
 
     if (options.dryRun) {
-        console.log(`🧪 Dry run: Found ${files.length} file(s):`);
-        files.forEach((f) => console.log('•', f));
+        logger.info(`Dry run: Found ${files.length} file(s):`);
+        files.forEach((f) => logger.info('•', f));
         return;
     }
 
     // Set up flat output directory if --flat flag is used
-    const flatOutputRoot = options.flat ? path.join(rootPath, 'dist') : null;
+    let flatOutputRoot = null;
+    if (options.flat) {
+        flatOutputRoot = options.output
+            ? path.resolve(options.output)
+            : path.join(rootPath, 'dist');
+    }
+
+    const succeeded = [];
+    const failed = [];
 
     for (const filePath of files) {
         const folderPath = path.dirname(filePath);
         if (options.verbose) {
-            console.log(`📄 Converting: ${filePath}`);
+            logger.info(`Converting: ${filePath}`);
         }
 
-        await convertMarkdownToPDF(folderPath, options, flatOutputRoot);
+        try {
+            await convertMarkdownToPDF(folderPath, options, flatOutputRoot);
+            succeeded.push(filePath);
+        } catch (err) {
+            logger.warn(`Skipping ${folderPath}: ${err.message}`);
+            failed.push({ path: folderPath, error: err.message });
+        }
+    }
+
+    // Print summary
+    logger.info('');
+    logger.info(
+        `Summary: ${succeeded.length} succeeded, ${failed.length} failed (${files.length} total)`,
+    );
+
+    if (failed.length > 0) {
+        logger.error('');
+        logger.error('Failed courses:');
+        for (const f of failed) {
+            logger.error(`   • ${f.path}`);
+            logger.error(`     ${f.error}`);
+        }
     }
 }
-
-const program = new Command();
-
-program
-    .name('md2cd')
-    .description('Convert Markdown course descriptions to PDF')
-    .argument(
-        '[sourceDir]',
-        'Path to a course folder or root directory',
-        // process.cwd()
-    )
-    .option(
-        '-r, --recursive',
-        "recursively convert all '-course-description.md' files in a given directory",
-    )
-    .option('-f, --flat', 'consolidate all outputs into root dist folder (use with --recursive)')
-    .option('-d, --dry-run', 'list files that would be converted without generating output')
-    .option('-H, --html', 'output generated HTML to console instead of PDF');
-// .option("-v, --verbose", "enable detailed logging to console");
-// .option("-l, --log <file>", "generate a log file; expects output path")
-// .version("1.0.0");
-
-program.action(async (sourceDir = '.', options) => {
-    const absolutePath = path.resolve(sourceDir);
-
-    let resolvedLogPath = undefined;
-    if (options.log) {
-        if (typeof options.log !== 'string') {
-            console.error('⚠️ Please provide a log file name or path after the -l flag.');
-            process.exit(1);
-        }
-
-        resolvedLogPath = path.isAbsolute(options.log)
-            ? options.log
-            : path.join(absolutePath, options.log);
-    }
-
-    const updatedOptions = { ...options, log: resolvedLogPath };
-
-    if (options.recursive) {
-        await convertAllMarkdownFiles(absolutePath, updatedOptions);
-    } else {
-        await convertMarkdownToPDF(absolutePath, updatedOptions);
-    }
-});
-
-program.parse(process.argv);

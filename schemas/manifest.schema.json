@@ -1,0 +1,158 @@
+{
+  "$id": "https://education.splunk.com/schemas/edu-md2cd/manifest.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "edu-md2cd Course Manifest",
+  "description": "Configuration for converting Markdown course descriptions to PDF",
+  "type": "object",
+  "required": ["metadata"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["courseId", "courseTitle", "splunk"],
+      "properties": {
+        "courseId": {
+          "type": "string",
+          "description": "Course identifier (e.g., '1001', '1234')"
+        },
+        "courseTitle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Full course title"
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9_-]+$",
+          "description": "URL-friendly course identifier"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief course description"
+        },
+        "courseDeveloper": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1
+            }
+          ],
+          "description": "Course developer name(s)"
+        },
+        "modality": {
+          "type": "string",
+          "description": "Course delivery method"
+        },
+        "duration": {
+          "type": "string",
+          "description": "Course duration (e.g., '18 hr', '13.5 hours')"
+        },
+        "audience": {
+          "type": "object",
+          "properties": {
+            "role": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Target roles for this course"
+            },
+            "internal": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Internal audience segments"
+            },
+            "external": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "External audience segments"
+            }
+          }
+        },
+        "ga": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "General availability date (YYYY-MM-DD)"
+        },
+        "updated": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Last update date (YYYY-MM-DD)"
+        },
+        "splunk": {
+          "type": "object",
+          "required": ["platform"],
+          "properties": {
+            "platform": {
+              "type": "object",
+              "required": ["version"],
+              "properties": {
+                "deployment": {
+                  "type": "string",
+                  "description": "Deployment type (e.g., 'Cloud', 'Enterprise')"
+                },
+                "version": {
+                  "type": "string",
+                  "description": "Splunk version (e.g., '9.4', '10.2.1')"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Plugin name (must match directory in plugins/)"
+              },
+              "translations": {
+                "type": "object",
+                "description": "Key-value pairs for translation overrides",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        ]
+      },
+      "description": "Plugins to load for processing"
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "courseDescription": {
+          "type": "string",
+          "description": "Custom path to course description markdown file"
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "theme": {
+          "type": "string",
+          "description": "Theme name (defaults to 'splunk-edu')"
+        },
+        "destination": {
+          "type": "string",
+          "description": "Custom output directory path"
+        },
+        "pdfs": {
+          "type": "object",
+          "properties": {
+            "courseDescription": {
+              "type": "string",
+              "description": "Custom filename for course description PDF"
+            }
+          }
+        }
+      }
+    }
+  }
+}

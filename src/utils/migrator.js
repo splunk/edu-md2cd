@@ -192,6 +192,7 @@ export async function migrateMetadata(metadataPath, coursePath, logger) {
         throw new Error(
             `Invalid YAML in ${metadataPath}: ${error.message}\n` +
                 `💡 Check YAML syntax (indentation, colons, hyphens)`,
+            { cause: error },
         );
     }
 
@@ -205,7 +206,7 @@ export async function migrateMetadata(metadataPath, coursePath, logger) {
     // Inform user about migration
     logger.info('✓ Created manifest.json');
     logger.warn('');
-    logger.warn('⚠️  metadata.yaml is deprecated');
+    logger.warn('metadata.yaml is deprecated');
     logger.warn('   Your course has been migrated to manifest.json');
     logger.warn('   Please review and commit manifest.json to your repository');
     logger.warn('   The old metadata.yaml file can be safely deleted');

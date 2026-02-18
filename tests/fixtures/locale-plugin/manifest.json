@@ -23,13 +23,8 @@
     {
       "name": "locale-jp",
       "translations": {
-        "audience": "Splunkクラウド管理者",
-        "duration": "18時間"
+        "audience": "Splunkクラウド管理者"
       }
     }
-  ],
-  "output": {
-    "destination": "dist",
-    "theme": "cisco"
-  }
+  ]
 }

@@ -2,7 +2,6 @@ import {
     getCourseFormat,
     getCourseDuration,
     getCourseAudience,
-    getCourseId,
     getCourseTitle,
 } from './metadataHandler.js';
 import {
@@ -21,10 +20,10 @@ import pluginManager from '../../plugins/pluginLoader.js';
  * @returns {string} HTML
  */
 export function buildMetadataSection(manifest, icons) {
-    let courseFormat =
+    const courseFormat =
         pluginManager.getFieldOverride('modality') ||
         pluginManager.translateValue(getCourseFormat(manifest));
-    let courseDuration =
+    const courseDuration =
         pluginManager.getFieldOverride('duration') ||
         pluginManager.translateValue(getCourseDuration(manifest));
 
@@ -115,7 +114,7 @@ export function buildPrerequisitesSection(prereqMarkdown, metadataHtml) {
  * @param {Object} manifest - Manifest object
  * @returns {string} HTML
  */
-export function buildHeader(themeName, logoBase64, manifest) {
+export function buildHeader(themeName, logoBase64, _manifest) {
     return `
     <header class="first-page-header">
       <img src="${logoBase64}" class="header-logo" />

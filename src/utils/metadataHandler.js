@@ -86,7 +86,7 @@ export async function getManifestPath(sourceDir) {
     try {
         await fs.access(manifestPath);
         return manifestPath;
-    } catch (err) {
+    } catch {
         // manifest.json doesn't exist, check for metadata.yaml
     }
 
@@ -95,13 +95,15 @@ export async function getManifestPath(sourceDir) {
         const yamlPath = path.join(sourceDir, `metadata.${ext}`);
         try {
             await fs.access(yamlPath);
-            // Found YAML file, migrate it
-            logger.info(`📦 Found ${path.basename(yamlPath)}, migrating to manifest.json...`);
-            await migrateMetadata(yamlPath, sourceDir, logger);
-            return manifestPath;
-        } catch (err) {
+        } catch {
+            // File doesn't exist, try next extension
             continue;
         }
+
+        // Found YAML file, migrate it (let errors propagate)
+        logger.info(`📦 Found ${path.basename(yamlPath)}, migrating to manifest.json...`);
+        await migrateMetadata(yamlPath, sourceDir, logger);
+        return manifestPath;
     }
 
     // No manifest or metadata file found

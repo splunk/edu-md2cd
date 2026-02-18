@@ -38,3 +38,7 @@ yarn-debug.log
 yarn-error.log
 package-lock.json
 yarn.lock
+
+*.pdf
+*.html
+
