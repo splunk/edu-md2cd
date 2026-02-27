@@ -12,7 +12,7 @@
     "coverage": "vitest run --coverage"
   },
   "bin": {
-    "md2cd": "./bin/index.js"
+    "md2cd": "./bin/md2cd.js"
   },
   "repository": {
     "type": "git",

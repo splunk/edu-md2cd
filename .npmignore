@@ -12,7 +12,7 @@ tests/
 # Build artifacts
 *.pdf
 *.tgz
-output.html
+*.html
 
 # Docs (README.md included automatically)
 docs/

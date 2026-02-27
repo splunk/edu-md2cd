@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import path from 'path';
 import { Command } from 'commander';
 import { convertMarkdownToPDF, convertAllMarkdownFiles } from '../src/index.js';
 
@@ -30,27 +29,19 @@ program.action(async (sourceDir = '.', options) => {
         process.exit(1);
     }
 
-    const absolutePath = path.resolve(sourceDir);
-
-    let resolvedLogPath = undefined;
     if (options.log) {
         if (typeof options.log !== 'string') {
             console.error('⚠️ Please provide a log file name or path after the -l flag.');
             process.exit(1);
         }
-
-        resolvedLogPath = path.isAbsolute(options.log)
-            ? options.log
-            : path.join(absolutePath, options.log);
+        // If log handling is needed, implement here
     }
 
-    const updatedOptions = { ...options, log: resolvedLogPath };
-
     if (options.recursive) {
-        await convertAllMarkdownFiles(absolutePath, updatedOptions);
+        await convertAllMarkdownFiles(sourceDir, options);
     } else {
-        await convertMarkdownToPDF(absolutePath, updatedOptions);
+        await convertMarkdownToPDF(sourceDir, options);
     }
 });
 
-program.parse(process.argv);
+program.parse();
