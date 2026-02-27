@@ -1,1 +1,2 @@
+node scripts/updateCopyrightYear.js
 npx lint-staged
