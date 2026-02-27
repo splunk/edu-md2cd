@@ -1,4 +1,18 @@
+# Source control & CI
 .gitignore
+.github/
+.husky/
+
+# Dev config
+eslint.config.js
+
+# Tests & fixtures
 tests/
+
+# Build artifacts
 *.pdf
+*.tgz
+output.html
+
+# Docs (README.md included automatically)
 docs/

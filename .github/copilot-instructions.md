@@ -1,0 +1,1 @@
+For all coding standards, architectural rules, and project guidelines, refer to the AGENTS.md file in the root of this repository. Follow those rules strictly.

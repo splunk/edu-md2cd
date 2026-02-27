@@ -1,7 +1,7 @@
 import { Stage } from '../pipeline.js';
 import { generatePdf } from '../utils/renderPdf.js';
 import { ensurePDFDirectoryExists } from '../utils/fileHandler.js';
-import { getCourseId, getCourseTitle, getVersion, slugify } from '../utils/metadataHandler.js';
+import { getCourseTitle, slugify } from '../utils/metadataHandler.js';
 import logger from '../utils/logger.js';
 import fs from 'fs/promises';
 import path from 'path';

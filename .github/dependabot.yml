@@ -1,0 +1,19 @@
+# Dependabot configuration file
+
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore'
+      include: 'scope'
+    allow:
+      - dependency-type: 'all'
+    ignore:
+      - dependency-name: 'vitest'
+        versions: ['4.x']
+
+# For more options, see: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration

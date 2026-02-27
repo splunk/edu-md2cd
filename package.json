@@ -7,14 +7,16 @@
   "scripts": {
     "test": "vitest run",
     "lint": "eslint .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "format": "prettier --write .",
+    "coverage": "vitest run --coverage"
   },
   "bin": {
     "md2cd": "./bin/index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:splunk/edu-md2cd.git"
+    "url": "git+ssh://git@github.com/splunk/edu-md2cd.git"
   },
   "author": "Splunk EDU",
   "license": "UNLICENSED",
@@ -30,10 +32,29 @@
     "yaml": "^2.8.2"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.4.2",
+    "@commitlint/config-conventional": "^20.4.2",
     "@eslint/js": "^10.0.1",
     "eslint": "^10.0.0",
     "globals": "^17.3.0",
     "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
     "vitest": "^4.0.18"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.json": [
+      "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write"
+    ],
+    "*.css": [
+      "prettier --write"
+    ]
   }
 }
