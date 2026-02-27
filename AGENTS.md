@@ -20,6 +20,13 @@
 - Never use deprecated Node.js APIs or legacy syntax.
 - Never commit code with lint or formatting errors.
 
+### Naming Conventions
+<!-- * Splunk app directories use underscores, not hyphens -->
+* Variable names use these suffixes:
+    - `Path` if it stores the full path to a directory or file
+    - `Dir` if it is only the name of the directory
+    - `File` or `Files` if it stores the name of a single file or array of files, respectively 
+
 ## Governance & Reviews
 - Always make changes modular and isolated.
 - Always document all changes in pull requests.
