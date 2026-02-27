@@ -9,8 +9,7 @@
     "lint": "eslint .",
     "prepare": "husky",
     "format": "prettier --write .",
-    "coverage": "vitest run --coverage",
-    "copyright": "node scripts/updateCopyrightYear.cjs"
+    "coverage": "vitest run --coverage"
   },
   "bin": {
     "md2cd": "./bin/index.js"

@@ -1,0 +1,19 @@
+name: Check Copyright Year
+
+on:
+  schedule:
+    - cron: '0 0 1 1 *' # Runs every January 1st at midnight UTC
+
+jobs:
+  check-copyright-year:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check README copyright year
+        run: |
+          year=$(date +"%Y")
+          if ! grep -q "© $year Splunk LLC. All rights reserved." README.md; then
+            echo "::error ::README.md does not have the current year ($year) in the copyright line."
+            exit 1
+          fi
