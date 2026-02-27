@@ -22,6 +22,6 @@ Portions of this package were generated with the assistance of ChatGPT and inter
 
 ---
 
-© 2025 Splunk LLC. All rights reserved.
+© 2026 Splunk LLC. All rights reserved.
 
 

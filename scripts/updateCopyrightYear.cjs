@@ -10,7 +10,10 @@ const currentYear = new Date().getFullYear();
 let readme = fs.readFileSync(readmePath, 'utf8');
 
 // Replace copyright year pattern like "© 2025 Splunk LLC. All rights reserved."
-readme = readme.replace(/©\s*\d{4}\s*Splunk LLC\. All rights reserved\./i, `© ${currentYear} Splunk LLC. All rights reserved.`);
+readme = readme.replace(
+  /©\s*\d{4}\s*Splunk LLC\. All rights reserved\./i,
+  `© ${currentYear} Splunk LLC. All rights reserved.`
+);
 
 fs.writeFileSync(readmePath, readme);
 
