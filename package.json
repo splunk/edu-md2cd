@@ -10,7 +10,7 @@
     "prepare": "husky",
     "format": "prettier --write .",
     "coverage": "vitest run --coverage",
-    "copyright": "node scripts/updateCopyrightYear.js"
+    "copyright": "node scripts/updateCopyrightYear.cjs"
   },
   "bin": {
     "md2cd": "./bin/index.js"
