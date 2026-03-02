@@ -5,7 +5,7 @@ import path from 'path';
 import fs from 'fs/promises';
 
 const exec = promisify(execFile);
-const BIN = path.resolve('bin/index.js');
+const BIN = path.resolve('bin/md2cd.js');
 const FIXTURES = path.resolve('tests/fixtures');
 
 /**
