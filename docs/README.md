@@ -156,10 +156,28 @@ Here's an example
       }
     }
   ]
-}
 ```
 
-### Using metadata.yaml
+
+## Environment Variables
+
+The `md2cd` tool supports the following environment variables:
+
+* `LOG_LEVEL`: Set the logging level (`debug`, `info`, `warn`, `error`, `fatal`). Default: `debug` in development, `info` in production.
+* `NO_EMOJI`: Set to `1` to disable emoji characters in log output. Useful for Windows terminals that don't render Unicode emojis correctly. Example:
+  ```sh
+  # Windows PowerShell
+  $env:NO_EMOJI=1; npx md2cd ./
+  
+  # Windows Command Prompt
+  set NO_EMOJI=1 && npx md2cd ./
+  
+  # Unix/macOS
+  NO_EMOJI=1 npx md2cd ./
+  ```
+
+
+## Using metadata.yaml
 
 The tool features a yaml-to-json migrator that will convert your existing `metadata.yaml` file to a `manifest.json` file. It's not backwards compatible, though, so you can't use the configurations availalable in the `manifest.json` in your `metadata.yaml`. If you want to use custom inputs and outputs, plugins, and themes, you will need to use a `manifest.json` file. 
 

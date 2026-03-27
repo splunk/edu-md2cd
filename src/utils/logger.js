@@ -2,6 +2,7 @@ import pino from 'pino';
 import pinoPretty from 'pino-pretty';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
+const useEmoji = process.env.NO_EMOJI !== '1';
 
 // Use pino-pretty synchronously (not as a worker transport) so we can pass
 // formatter functions.  This is fine for a CLI tool.
@@ -43,7 +44,7 @@ for (const level of ['debug', 'info', 'warn', 'error', 'fatal']) {
         const message = args.map(String).join(' ');
         const pad = SHORT_LEVELS.has(level) ? ' ' : '';
         // Use the message's own emoji if present, otherwise prepend the default
-        const prefix = EMOJI_RE.test(message) ? '' : `${EMOJI[level]} `;
+        const prefix = EMOJI_RE.test(message) ? '' : (useEmoji ? `${EMOJI[level]} ` : '');
         baseLogger[level](`${pad}${prefix}${message}`);
     };
 }

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,7 +21,8 @@ export async function loadThemeConfig(themeName = DEFAULT_THEME) {
         );
     }
 
-    const configModule = await import(configPath);
+    // Convert to file URL for cross-platform ESM compatibility (required on Windows)
+    const configModule = await import(pathToFileURL(configPath).href);
     return configModule.default;
 }
 
