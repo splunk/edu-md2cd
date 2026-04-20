@@ -24,17 +24,35 @@ function deduplicateArray(array) {
 function normalizeModality(legacyFormat) {
     const normalized = legacyFormat.toLowerCase();
 
-    if (normalized.includes('instructor-led') || normalized.includes('ilt')) {
-        return 'ILT';
+    // Map legacy values to new valid modalities
+    if (
+        normalized.includes('instructor-led') ||
+        normalized.includes('ilt') ||
+        normalized.includes('instructor') ||
+        normalized.includes('classroom')
+    ) {
+        return 'Instructor-led';
     }
-    if (normalized.includes('virtual') || normalized.includes('vilt')) {
-        return 'VILT';
+    if (
+        normalized.includes('elearning with lab') ||
+        normalized.includes('e-learning with lab') ||
+        normalized.includes('self-paced with lab')
+    ) {
+        return 'eLearning with lab exercises';
     }
-    if (normalized.includes('self-paced')) {
-        return 'Self-paced';
+    if (
+        normalized.includes('elearning') ||
+        normalized.includes('e-learning') ||
+        normalized.includes('self-paced') ||
+        normalized.includes('vilt')
+    ) {
+        return 'eLearning';
+    }
+    if (normalized.includes('lab') && normalized.includes('only')) {
+        return 'Lab exercises only';
     }
 
-    // Return as-is if can't normalize
+    // Return as-is if can't normalize (will be caught by validation)
     return legacyFormat;
 }
 

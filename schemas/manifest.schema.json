@@ -41,6 +41,7 @@
         },
         "modality": {
           "type": "string",
+          "enum": ["eLearning", "eLearning with lab exercises", "Instructor-led", "Instructor-led with lab exercises", "Lab exercises only"],
           "description": "Course delivery method"
         },
         "duration": {
@@ -66,6 +67,24 @@
               "description": "External audience segments"
             }
           }
+        },
+        "prerequisites": {
+          "type": "object",
+          "required": ["courses"],
+          "properties": {
+            "courses": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "description": "Required prerequisite courses (must be from validated list)"
+            },
+            "competencies": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Skills, knowledge, or competencies students should have"
+            }
+          },
+          "description": "Course prerequisites and recommended competencies"
         },
         "ga": {
           "type": "string",

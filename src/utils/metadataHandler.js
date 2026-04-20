@@ -78,6 +78,42 @@ export function slugify(text) {
         .replace(/\s+/g, '-');
 }
 
+/**
+ * Generate prerequisites markdown from metadata
+ * @param {Object} metadata - Manifest object with prerequisites
+ * @returns {string|null} Generated prerequisites markdown or null if no prerequisites
+ */
+export function generatePrerequisitesMarkdown(metadata) {
+    const prerequisites = metadata?.metadata?.prerequisites;
+
+    if (!prerequisites || !prerequisites.courses || prerequisites.courses.length === 0) {
+        return null;
+    }
+
+    const lines = ['## Prerequisites', ''];
+
+    // Add required prerequisite courses
+    lines.push(
+        'To be successful, students must have completed these Splunk Education course(s) or possess equivalent working knowledge:',
+    );
+    lines.push('');
+    prerequisites.courses.forEach((course) => {
+        lines.push(`- ${course}`);
+    });
+
+    // Add competencies if present
+    if (prerequisites.competencies && prerequisites.competencies.length > 0) {
+        lines.push('');
+        lines.push('Students should have a solid understanding of the following:');
+        lines.push('');
+        prerequisites.competencies.forEach((skill) => {
+            lines.push(`- ${skill}`);
+        });
+    }
+
+    return lines.join('\n');
+}
+
 export async function getManifestPath(sourceDir) {
     const manifestPath = path.join(sourceDir, 'manifest.json');
     const yamlExtensions = ['yaml', 'yml'];

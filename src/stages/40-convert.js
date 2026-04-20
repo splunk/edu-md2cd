@@ -1,6 +1,7 @@
 import { Stage } from '../pipeline.js';
 import { extractPrerequisites, convertToHtml } from '../utils/convertMarkdown.js';
 import { buildFullHtml } from '../utils/buildHtml.js';
+import { generatePrerequisitesMarkdown } from '../utils/metadataHandler.js';
 import pluginManager from '../../plugins/pluginLoader.js';
 import logger from '../utils/logger.js';
 
@@ -22,10 +23,26 @@ export class ConvertStage extends Stage {
                 await this.loadPlugins(context.plugins);
             }
 
-            // Extract prerequisites section
-            const { prereqMarkdown, cleanedMarkdown } = extractPrerequisites(
-                context.markdownContent,
-            );
+            // Check if prerequisites should be generated from metadata or extracted from markdown
+            let prereqMarkdown;
+            let cleanedMarkdown;
+
+            const generatedPrereqs = generatePrerequisitesMarkdown(context.manifest);
+            if (generatedPrereqs) {
+                // Use generated prerequisites from metadata
+                prereqMarkdown = generatedPrereqs;
+                // Insert placeholder for prerequisites before Course Outline section
+                cleanedMarkdown = this.insertPrerequisitesPlaceholder(context.markdownContent);
+                logger.info('  Generated prerequisites from metadata');
+            } else {
+                // Fall back to extracting prerequisites from markdown (legacy behavior)
+                const extracted = extractPrerequisites(context.markdownContent);
+                prereqMarkdown = extracted.prereqMarkdown;
+                cleanedMarkdown = extracted.cleanedMarkdown;
+                if (prereqMarkdown) {
+                    logger.info('  Extracted prerequisites from markdown');
+                }
+            }
 
             // Convert main content to HTML
             const mainHtml = convertToHtml(cleanedMarkdown);
@@ -44,6 +61,36 @@ export class ConvertStage extends Stage {
             context.addError(error.message, this.name);
             throw error;
         }
+    }
+
+    /**
+     * Insert prerequisites placeholder before Course Outline section
+     * @param {string} markdown - Markdown content
+     * @returns {string} Markdown with {{PREREQUISITES}} placeholder inserted
+     */
+    insertPrerequisitesPlaceholder(markdown) {
+        const lines = markdown.replace(/\r\n/g, '\n').split('\n');
+        const courseOutlineHeaders = pluginManager.getCourseOutlineHeaders();
+
+        // Find the Course Outline header
+        let insertIndex = -1;
+        for (let i = 0; i < lines.length; i++) {
+            const trimmedLine = lines[i].trim().toLowerCase();
+            if (courseOutlineHeaders.some((header) => trimmedLine === header.toLowerCase())) {
+                insertIndex = i;
+                break;
+            }
+        }
+
+        if (insertIndex === -1) {
+            // No Course Outline found, insert at the end
+            return markdown + '\n\n{{PREREQUISITES}}\n';
+        }
+
+        // Insert placeholder before Course Outline
+        const before = lines.slice(0, insertIndex);
+        const after = lines.slice(insertIndex);
+        return [...before, '{{PREREQUISITES}}', '', ...after].join('\n');
     }
 
     /**

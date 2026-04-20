@@ -1,5 +1,6 @@
 import { Stage } from '../pipeline.js';
 import { getCourseId, getCourseTitle, getVersion } from '../utils/metadataHandler.js';
+import { validateModality, validatePrerequisites } from '../utils/validator.js';
 import logger from '../utils/logger.js';
 import fs from 'fs';
 import path from 'path';
@@ -28,6 +29,22 @@ export class ValidateStage extends Stage {
 
             if (!version) {
                 context.addWarning("No 'version' found in metadata", this.name);
+            }
+
+            // Validate modality/format field
+            const modalityValidation = validateModality(context.manifest);
+            if (!modalityValidation.valid) {
+                context.addError(modalityValidation.error, this.name);
+                return;
+            }
+
+            // Validate prerequisites
+            const prerequisitesValidation = validatePrerequisites(context.manifest);
+            if (!prerequisitesValidation.valid) {
+                prerequisitesValidation.errors.forEach((error) => {
+                    context.addError(error, this.name);
+                });
+                return;
             }
 
             // Validate theme exists

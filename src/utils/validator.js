@@ -2,9 +2,16 @@ import Ajv from 'ajv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { VALID_PREREQUISITE_COURSES } from './validPrerequisites.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+/**
+ * Valid modality values for course delivery method
+ * @constant {Array<string>}
+ */
+const VALID_MODALITIES = ['eLearning', 'eLearning with lab exercises', 'Instructor-led', 'Instructor-led with lab exercises', 'Lab exercises only'];
 
 /**
  * Validate manifest against JSON schema
@@ -52,4 +59,66 @@ export function formatValidationErrors(errors) {
                 return `${path}: ${error.message}`;
         }
     });
+}
+
+/**
+ * Validate modality/format field value
+ * Checks both manifest.json (modality) and legacy YAML (format)
+ * @param {Object} manifest - Manifest or metadata object to validate
+ * @returns {Object} Validation result with { valid: boolean, error: string }
+ */
+export function validateModality(manifest) {
+    // Get modality from manifest.json or format from legacy YAML
+    const modalityValue = manifest?.metadata?.modality || manifest?.format;
+
+    // If no modality/format is specified, it's valid (field is optional)
+    if (!modalityValue) {
+        return { valid: true, error: null };
+    }
+
+    // Check if the value is one of the valid options
+    if (!VALID_MODALITIES.includes(modalityValue)) {
+        const validOptions = VALID_MODALITIES.map((m) => `"${m}"`).join(', ');
+        return {
+            valid: false,
+            error: `Modality must be one of the following: ${validOptions}. Received: "${modalityValue}"`,
+        };
+    }
+
+    return { valid: true, error: null };
+}
+
+/**
+ * Validate prerequisites required courses
+ * @param {Object} manifest - Manifest object to validate
+ * @returns {Object} Validation result with { valid: boolean, errors: array }
+ */
+export function validatePrerequisites(manifest) {
+    const prerequisites = manifest?.metadata?.prerequisites;
+
+    // If no prerequisites specified, it's valid (will be caught by schema if courses is missing)
+    if (!prerequisites || !prerequisites.courses) {
+        return { valid: true, errors: [] };
+    }
+
+    const invalidCourses = [];
+
+    // Validate each required course against the valid list
+    prerequisites.courses.forEach((course) => {
+        if (!VALID_PREREQUISITE_COURSES.includes(course)) {
+            invalidCourses.push(course);
+        }
+    });
+
+    if (invalidCourses.length > 0) {
+        return {
+            valid: false,
+            errors: invalidCourses.map(
+                (course) =>
+                    `Invalid prerequisite course: "${course}". Please ensure all required prerequisites are valid course names.`,
+            ),
+        };
+    }
+
+    return { valid: true, errors: [] };
 }

@@ -1,9 +1,9 @@
 {
   "metadata": {
     "courseId": "1234",
-    "courseTitle": "Themes Course",
-    "slug": "themes-course",
-    "description": "Themes fun!",
+    "courseTitle": "Using Prerequisites in Metadata",
+    "slug": "metaprereqs",
+    "description": "Stuff you need to know!",
     "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
     "modality": "Instructor-led",
     "duration": "13.5 hours",
@@ -11,6 +11,18 @@
       "role": ["sysadmin", "power user"],
       "internal": ["professional services", "sales engineer"],
       "external": ["customer-facing", "partners"]
+    },
+    "prerequisites": {
+      "courses": [
+        "Splunk Enterprise System Administration",
+        "Troubleshooting Splunk Enterprise",
+        "Splunk Enterprise Cluster Administration"
+      ],
+      "competencies": [
+        "Linux chops",
+        "Karate chops",
+        "Underwater basket weaving"
+      ]
     },
     "ga": "2025-11-01",
     "updated": "2026-01-21",
@@ -20,8 +32,5 @@
         "version": "10.2.1"
       }
     }
-  },
-  "output": {
-    "theme": "cisco"
   }
 }
