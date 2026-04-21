@@ -62,6 +62,24 @@ export function loadThemeCss(themeName = DEFAULT_THEME) {
 }
 
 /**
+ * Get MIME type from file extension
+ * @param {string} filename - Filename with extension
+ * @returns {string} MIME type
+ */
+function getMimeType(filename) {
+    const ext = path.extname(filename).toLowerCase();
+    const mimeTypes = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.svg': 'image/svg+xml',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp',
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
+}
+
+/**
  * Encode theme asset as base64 data URI
  * @param {string} themeName - Theme name
  * @param {string} assetName - Asset filename
@@ -74,8 +92,31 @@ export function encodeAssetAsBase64(themeName, assetName) {
         throw new Error(`Asset not found at path: ${fullPath}`);
     }
 
+    const mimeType = getMimeType(assetName);
     const data = fs.readFileSync(fullPath).toString('base64');
-    return `data:image/png;base64,${data}`;
+    return `data:${mimeType};base64,${data}`;
+}
+
+/**
+ * Get icon path with fallback from SVG to PNG
+ * @param {string} themeName - Theme name
+ * @param {string} iconBaseName - Icon base name (e.g., 'icon-format')
+ * @returns {string} Icon filename with extension
+ */
+function getIconPath(themeName, iconBaseName) {
+    // Try SVG first
+    const svgPath = getThemeAssetPath(themeName, `${iconBaseName}.svg`);
+    if (fs.existsSync(svgPath)) {
+        return `${iconBaseName}.svg`;
+    }
+
+    // Fall back to PNG
+    const pngPath = getThemeAssetPath(themeName, `${iconBaseName}.png`);
+    if (fs.existsSync(pngPath)) {
+        return `${iconBaseName}.png`;
+    }
+
+    throw new Error(`Icon not found: ${iconBaseName} (tried .svg and .png)`);
 }
 
 /**
@@ -85,9 +126,9 @@ export function encodeAssetAsBase64(themeName, assetName) {
  */
 export function loadThemeIcons(themeName = DEFAULT_THEME) {
     return {
-        iconFormat: encodeAssetAsBase64(themeName, 'icon-format.png'),
-        iconDuration: encodeAssetAsBase64(themeName, 'icon-duration.png'),
-        iconAudience: encodeAssetAsBase64(themeName, 'icon-audience.png'),
+        iconFormat: encodeAssetAsBase64(themeName, getIconPath(themeName, 'icon-format')),
+        iconDuration: encodeAssetAsBase64(themeName, getIconPath(themeName, 'icon-duration')),
+        iconAudience: encodeAssetAsBase64(themeName, getIconPath(themeName, 'icon-audience')),
     };
 }
 

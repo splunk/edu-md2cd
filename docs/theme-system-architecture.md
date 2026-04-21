@@ -29,9 +29,9 @@ themes/
     assets/               # Theme assets directory (required)
       logo-header.png     # Header logo
       logo-footer.png     # Footer logo
-      icon-format.png     # Format metadata icon
-      icon-duration.png   # Duration metadata icon
-      icon-audience.png   # Audience metadata icon
+      icon-format.svg     # Format metadata icon
+      icon-duration.svg   # Duration metadata icon
+      icon-audience.svg   # Audience metadata icon
 ```
 
 **Required Files**:
@@ -386,13 +386,13 @@ h2 {
 
 ### Step 4: Add Required Assets
 
-Place these PNG files in `themes/my-theme/assets/`:
+Place these image files in `themes/my-theme/assets/`:
 
 - `header-logo.png` - Header logo
 - `footer-logo.png` - Footer logo
-- `icon-format.png` - Format metadata icon (24x24px recommended)
-- `icon-duration.png` - Duration metadata icon (24x24px recommended)
-- `icon-audience.png` - Audience metadata icon (24x24px recommended)
+- `icon-format.svg` - Format metadata icon (scalable SVG recommended)
+- `icon-duration.svg` - Duration metadata icon (scalable SVG recommended)
+- `icon-audience.svg` - Audience metadata icon (scalable SVG recommended)
 
 ### Step 5: Use Theme
 
@@ -417,9 +417,12 @@ md2cd --theme my-theme /path/to/course
 All assets are base64-encoded and embedded in HTML:
 
 ```javascript
-// Convert PNG to data URI
+// Convert image to data URI (auto-detects MIME type from extension)
 const logoBase64 = encodeAssetAsBase64('my-theme', 'logo.png');
 // Result: "data:image/png;base64,iVBORw0KGgo..."
+
+const iconBase64 = encodeAssetAsBase64('my-theme', 'icon.svg');
+// Result: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0..."
 
 // Embed in HTML
 const html = `<img src="${logoBase64}" />`;
