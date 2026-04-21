@@ -46,7 +46,7 @@ export function buildMetadataSection(manifest, icons, formatIndex = 0) {
           courseFormat
               ? `<p class="metadata-line">
               <span class="metadata-key">
-                <img src="${icons.iconFormat}" class="metadata-icon" alt="icon" />
+                <span class="metadata-icon">${icons.iconFormat}</span>
                 <strong>${formatLabel}:</strong>
               </span>
               <span class="metadata-value">${courseFormat}</span>
@@ -57,7 +57,7 @@ export function buildMetadataSection(manifest, icons, formatIndex = 0) {
           courseDuration
               ? `<p class="metadata-line">
               <span class="metadata-key">
-                <img src="${icons.iconDuration}" class="metadata-icon" alt="icon" />
+                <span class="metadata-icon">${icons.iconDuration}</span>
                 <strong>${durationLabel}:</strong>
               </span>
               <span class="metadata-value">${courseDuration}</span>
@@ -68,7 +68,7 @@ export function buildMetadataSection(manifest, icons, formatIndex = 0) {
           courseAudience && Array.isArray(courseAudience)
               ? `<div class="metadata-line">
               <span class="metadata-key">
-                <img src="${icons.iconAudience}" class="metadata-icon" alt="icon" />
+                <span class="metadata-icon">${icons.iconAudience}</span>
                 <strong>${audienceLabel}:</strong>
               </span>
               <div class="metadata-value">

@@ -142,9 +142,10 @@ li {
 }
 
 .metadata-icon {
-    height: 32px;
-    flex-shrink: 0;
-    margin-right: 10px;
+    font-size: 14px;
+    margin-right: 6px;
+    display: inline-block;
+    line-height: 1;
 }
 
 .metadata-key {
@@ -152,12 +153,6 @@ li {
     align-items: center;
     flex-shrink: 0;
     width: 40%;
-}
-
-.metadata-key img {
-    height: 20px;
-    width: auto;
-    margin-right: 6px;
 }
 
 .metadata-value {

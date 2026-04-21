@@ -29,15 +29,14 @@ themes/
     assets/               # Theme assets directory (required)
       logo-header.png     # Header logo
       logo-footer.png     # Footer logo
-      icon-format.svg     # Format metadata icon
-      icon-duration.svg   # Duration metadata icon
-      icon-audience.svg   # Audience metadata icon
 ```
 
 **Required Files**:
 - `theme.config.js`: JavaScript module exporting theme configuration
 - `style.css`: CSS stylesheet for HTML rendering
-- `assets/`: Directory containing theme-specific images
+- `assets/`: Directory containing theme-specific images (logos only)
+
+**Note**: Metadata icons (format, duration, audience) use Unicode characters (●) instead of image files for better scalability and legibility.
 
 ### 2. Theme Configuration Format
 
@@ -121,9 +120,9 @@ getThemeDir(themeName)
 // Load theme CSS content as string
 loadThemeCss(themeName)
 
-// Load standard metadata icons as base64 data URIs
+// Load standard metadata icons as Unicode characters
 loadThemeIcons(themeName)
-// Returns: { iconFormat, iconDuration, iconAudience }
+// Returns: { iconFormat: '●', iconDuration: '●', iconAudience: '●' }
 
 // Get path to theme asset
 getThemeAssetPath(themeName, assetName)
@@ -390,9 +389,8 @@ Place these image files in `themes/my-theme/assets/`:
 
 - `header-logo.png` - Header logo
 - `footer-logo.png` - Footer logo
-- `icon-format.svg` - Format metadata icon (scalable SVG recommended)
-- `icon-duration.svg` - Duration metadata icon (scalable SVG recommended)
-- `icon-audience.svg` - Audience metadata icon (scalable SVG recommended)
+
+**Note**: Metadata icons are now Unicode characters (● U+25CF Black Circle) rendered directly in HTML, not image files. This provides better scalability and legibility at small sizes.
 
 ### Step 5: Use Theme
 
@@ -421,11 +419,13 @@ All assets are base64-encoded and embedded in HTML:
 const logoBase64 = encodeAssetAsBase64('my-theme', 'logo.png');
 // Result: "data:image/png;base64,iVBORw0KGgo..."
 
-const iconBase64 = encodeAssetAsBase64('my-theme', 'icon.svg');
-// Result: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0..."
-
 // Embed in HTML
 const html = `<img src="${logoBase64}" />`;
+
+// Metadata icons use Unicode characters instead of images
+const icons = loadThemeIcons('my-theme');
+// Returns: { iconFormat: '●', iconDuration: '●', iconAudience: '●' }
+const html2 = `<span class="metadata-icon">${icons.iconFormat}</span>`;
 ```
 
 **Benefits**:

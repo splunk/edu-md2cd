@@ -62,24 +62,6 @@ export function loadThemeCss(themeName = DEFAULT_THEME) {
 }
 
 /**
- * Get MIME type from file extension
- * @param {string} filename - Filename with extension
- * @returns {string} MIME type
- */
-function getMimeType(filename) {
-    const ext = path.extname(filename).toLowerCase();
-    const mimeTypes = {
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.svg': 'image/svg+xml',
-        '.gif': 'image/gif',
-        '.webp': 'image/webp',
-    };
-    return mimeTypes[ext] || 'application/octet-stream';
-}
-
-/**
  * Encode theme asset as base64 data URI
  * @param {string} themeName - Theme name
  * @param {string} assetName - Asset filename
@@ -92,43 +74,36 @@ export function encodeAssetAsBase64(themeName, assetName) {
         throw new Error(`Asset not found at path: ${fullPath}`);
     }
 
-    const mimeType = getMimeType(assetName);
     const data = fs.readFileSync(fullPath).toString('base64');
+    const ext = path.extname(assetName).toLowerCase();
+    
+    // Determine MIME type based on extension
+    let mimeType = 'image/png';
+    if (ext === '.jpg' || ext === '.jpeg') {
+        mimeType = 'image/jpeg';
+    } else if (ext === '.svg') {
+        mimeType = 'image/svg+xml';
+    } else if (ext === '.gif') {
+        mimeType = 'image/gif';
+    } else if (ext === '.webp') {
+        mimeType = 'image/webp';
+    }
+    
     return `data:${mimeType};base64,${data}`;
 }
 
 /**
- * Get icon path with fallback from SVG to PNG
- * @param {string} themeName - Theme name
- * @param {string} iconBaseName - Icon base name (e.g., 'icon-format')
- * @returns {string} Icon filename with extension
+ * Load all standard icons for a theme - returns Unicode characters instead of images
+ * @param {string} _themeName - Theme name (unused, kept for API compatibility)
+ * @returns {Object} Object with iconFormat, iconDuration, iconAudience as Unicode characters
  */
-function getIconPath(themeName, iconBaseName) {
-    // Try SVG first
-    const svgPath = getThemeAssetPath(themeName, `${iconBaseName}.svg`);
-    if (fs.existsSync(svgPath)) {
-        return `${iconBaseName}.svg`;
-    }
-
-    // Fall back to PNG
-    const pngPath = getThemeAssetPath(themeName, `${iconBaseName}.png`);
-    if (fs.existsSync(pngPath)) {
-        return `${iconBaseName}.png`;
-    }
-
-    throw new Error(`Icon not found: ${iconBaseName} (tried .svg and .png)`);
-}
-
-/**
- * Load all standard icons for a theme as base64 data URIs
- * @param {string} themeName - Theme name
- * @returns {Object} Object with iconFormat, iconDuration, iconAudience
- */
-export function loadThemeIcons(themeName = DEFAULT_THEME) {
+export function loadThemeIcons(_themeName = DEFAULT_THEME) {
+    // Use Unicode characters instead of loading icon files
+    // These are simple, scalable, and universally supported
     return {
-        iconFormat: encodeAssetAsBase64(themeName, getIconPath(themeName, 'icon-format')),
-        iconDuration: encodeAssetAsBase64(themeName, getIconPath(themeName, 'icon-duration')),
-        iconAudience: encodeAssetAsBase64(themeName, getIconPath(themeName, 'icon-audience')),
+        iconFormat: '▸',    // U+25CF Black Circle
+        iconDuration: '▸',  // U+25CF Black Circle
+        iconAudience: '▸',  // U+25CF Black Circle
     };
 }
 
