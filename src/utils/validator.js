@@ -11,7 +11,14 @@ const __dirname = path.dirname(__filename);
  * Valid modality values for course delivery method
  * @constant {Array<string>}
  */
-const VALID_MODALITIES = ['eLearning', 'eLearning with lab exercises', 'Instructor-led', 'Instructor-led with lab exercises', 'Lab exercises only'];
+const VALID_MODALITIES = [
+    'eLearning',
+    'eLearning with lab exercises',
+    'Instructor-led',
+    'Instructor-led training',
+    'Instructor-led with lab exercises',
+    'Lab exercises only'
+];
 
 /**
  * Validate manifest against JSON schema
@@ -62,18 +69,37 @@ export function formatValidationErrors(errors) {
 }
 
 /**
- * Validate modality/format field value
- * Checks both manifest.json (modality) and legacy YAML (format)
+ * Validate format/modality field values
+ * Checks both new format array and legacy modality field
  * @param {Object} manifest - Manifest or metadata object to validate
- * @returns {Object} Validation result with { valid: boolean, error: string }
+ * @returns {Object} Validation result with { valid: boolean, errors: array }
  */
 export function validateModality(manifest) {
-    // Get modality from manifest.json or format from legacy YAML
+    const errors = [];
+
+    // Check for new format array structure
+    const formats = manifest?.metadata?.format;
+    if (Array.isArray(formats) && formats.length > 0) {
+        formats.forEach((format, index) => {
+            if (!format.mode) {
+                errors.push(`Format[${index}]: Missing required 'mode' field`);
+            } else if (!VALID_MODALITIES.includes(format.mode)) {
+                const validOptions = VALID_MODALITIES.map((m) => `"${m}"`).join(', ');
+                errors.push(
+                    `Format[${index}]: Mode must be one of the following: ${validOptions}. Received: "${format.mode}"`
+                );
+            }
+        });
+
+        return errors.length > 0 ? { valid: false, errors } : { valid: true, errors: [] };
+    }
+
+    // Backward compatibility: check for old modality field or legacy YAML format
     const modalityValue = manifest?.metadata?.modality || manifest?.format;
 
     // If no modality/format is specified, it's valid (field is optional)
     if (!modalityValue) {
-        return { valid: true, error: null };
+        return { valid: true, errors: [] };
     }
 
     // Check if the value is one of the valid options
@@ -81,11 +107,13 @@ export function validateModality(manifest) {
         const validOptions = VALID_MODALITIES.map((m) => `"${m}"`).join(', ');
         return {
             valid: false,
-            error: `Modality must be one of the following: ${validOptions}. Received: "${modalityValue}"`,
+            errors: [
+                `Modality must be one of the following: ${validOptions}. Received: "${modalityValue}"`,
+            ],
         };
     }
 
-    return { valid: true, error: null };
+    return { valid: true, errors: [] };
 }
 
 /**

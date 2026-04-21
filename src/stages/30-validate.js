@@ -34,7 +34,9 @@ export class ValidateStage extends Stage {
             // Validate modality/format field
             const modalityValidation = validateModality(context.manifest);
             if (!modalityValidation.valid) {
-                context.addError(modalityValidation.error, this.name);
+                modalityValidation.errors.forEach((error) => {
+                    context.addError(error, this.name);
+                });
                 return;
             }
 

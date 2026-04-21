@@ -17,15 +17,16 @@ import pluginManager from '../../plugins/pluginLoader.js';
  * Build HTML for metadata section
  * @param {Object} manifest - Manifest object
  * @param {Object} icons - Icons object {iconFormat, iconDuration, iconAudience}
+ * @param {number} formatIndex - Index of format to use (default: 0)
  * @returns {string} HTML
  */
-export function buildMetadataSection(manifest, icons) {
+export function buildMetadataSection(manifest, icons, formatIndex = 0) {
     const courseFormat =
         pluginManager.getFieldOverride('modality') ||
-        pluginManager.translateValue(getCourseFormat(manifest));
+        pluginManager.translateValue(getCourseFormat(manifest, formatIndex));
     const courseDuration =
         pluginManager.getFieldOverride('duration') ||
-        pluginManager.translateValue(getCourseDuration(manifest));
+        pluginManager.translateValue(getCourseDuration(manifest, formatIndex));
 
     let courseAudience = getCourseAudience(manifest);
     const audienceOverride = pluginManager.getFieldOverride('audience');
@@ -129,9 +130,10 @@ export function buildHeader(themeName, logoBase64, _manifest) {
  * @param {string} bodyContent - Body HTML content (with {{PREREQUISITES}} placeholder)
  * @param {string} themeName - Theme name
  * @param {string} prereqMarkdown - Prerequisites markdown content
+ * @param {number} formatIndex - Index of format to use (default: 0)
  * @returns {Promise<string>} Complete HTML document
  */
-export async function buildFullHtml(manifest, bodyContent, themeName, prereqMarkdown = null) {
+export async function buildFullHtml(manifest, bodyContent, themeName, prereqMarkdown = null, formatIndex = 0) {
     const css = loadThemeCss(themeName);
     const icons = loadThemeIcons(themeName);
     const logoFilename = await getThemeLogoFilename(themeName);
@@ -148,7 +150,7 @@ export async function buildFullHtml(manifest, bodyContent, themeName, prereqMark
     const header = buildHeader(themeName, logoBase64, manifest);
 
     // Build metadata section
-    const metadataHtml = buildMetadataSection(manifest, icons);
+    const metadataHtml = buildMetadataSection(manifest, icons, formatIndex);
 
     // Build prerequisites with metadata
     const prereqHtml = buildPrerequisitesSection(prereqMarkdown, metadataHtml);

@@ -44,8 +44,15 @@ export class ConvertStage extends Stage {
                 }
             }
 
+            // Store cleaned markdown and prerequisites in context for build stage
+            context.cleanedMarkdown = cleanedMarkdown;
+            context.prereqMarkdown = prereqMarkdown;
+
             // Convert main content to HTML
             const mainHtml = convertToHtml(cleanedMarkdown);
+
+            // Get formatIndex from context (default to 0 for backward compatibility)
+            const formatIndex = context.formatIndex !== undefined ? context.formatIndex : 0;
 
             // Build complete HTML document (buildFullHtml handles prerequisites + metadata internally)
             const html = await buildFullHtml(
@@ -53,6 +60,7 @@ export class ConvertStage extends Stage {
                 mainHtml,
                 context.theme,
                 prereqMarkdown,
+                formatIndex,
             );
             context.html = html;
 

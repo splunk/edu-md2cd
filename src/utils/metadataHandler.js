@@ -32,22 +32,61 @@ export function getVersion(metadata) {
     return version;
 }
 
-export function getCourseFormat(metadata) {
-    // Support both manifest.json (modality) and legacy YAML (format)
-    const courseFormat = metadata?.metadata?.modality || metadata?.format;
-    if (courseFormat === undefined) {
-        throw new Error("No 'modality' or 'format' found in the metadata");
+/**
+ * Get all course formats from metadata
+ * @param {Object} metadata - Manifest object
+ * @returns {Array} Array of format objects with mode and duration
+ */
+export function getCourseFormats(metadata) {
+    // Check for new format array structure
+    const formats = metadata?.metadata?.format;
+    if (Array.isArray(formats) && formats.length > 0) {
+        return formats;
     }
-    return courseFormat;
+
+    // Backward compatibility: check for old modality/duration fields
+    const modality = metadata?.metadata?.modality || metadata?.format;
+    const duration = metadata?.metadata?.duration || metadata?.duration;
+    
+    if (modality) {
+        // Return as single-item array for consistency
+        return [{
+            mode: modality,
+            duration: duration || undefined
+        }];
+    }
+
+    throw new Error("No 'format', 'modality', or legacy 'format' found in the metadata");
 }
 
-export function getCourseDuration(metadata) {
-    // Support both manifest.json and legacy YAML
-    const courseDuration = metadata?.metadata?.duration || metadata?.duration;
-    if (courseDuration === undefined) {
-        throw new Error("No 'duration' found in the metadata");
+/**
+ * Get course format/mode from metadata (for backward compatibility)
+ * Returns the mode from the first format or legacy modality field
+ * @param {Object} metadata - Manifest object
+ * @param {number} formatIndex - Index of format to get (default: 0)
+ * @returns {string} Course mode/format
+ */
+export function getCourseFormat(metadata, formatIndex = 0) {
+    const formats = getCourseFormats(metadata);
+    if (!formats[formatIndex]) {
+        throw new Error(`Format index ${formatIndex} not found`);
     }
-    return courseDuration;
+    return formats[formatIndex].mode;
+}
+
+/**
+ * Get course duration from metadata (for backward compatibility)
+ * Returns the duration from the first format or legacy duration field
+ * @param {Object} metadata - Manifest object
+ * @param {number} formatIndex - Index of format to get (default: 0)
+ * @returns {string|undefined} Course duration
+ */
+export function getCourseDuration(metadata, formatIndex = 0) {
+    const formats = getCourseFormats(metadata);
+    if (!formats[formatIndex]) {
+        throw new Error(`Format index ${formatIndex} not found`);
+    }
+    return formats[formatIndex].duration;
 }
 
 export function getCourseAudience(metadata) {

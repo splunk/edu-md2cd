@@ -39,14 +39,25 @@
           ],
           "description": "Course developer name(s)"
         },
-        "modality": {
-          "type": "string",
-          "enum": ["eLearning", "eLearning with lab exercises", "Instructor-led", "Instructor-led with lab exercises", "Lab exercises only"],
-          "description": "Course delivery method"
-        },
-        "duration": {
-          "type": "string",
-          "description": "Course duration (e.g., '18 hr', '13.5 hours')"
+        "format": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": ["eLearning", "eLearning with lab exercises", "Instructor-led", "Instructor-led training", "Instructor-led with lab exercises", "Lab exercises only"],
+                "description": "Course delivery mode"
+              },
+              "duration": {
+                "type": "string",
+                "description": "Course duration for this format (e.g., '18 hour(s)', '5 hour(s)')"
+              }
+            }
+          },
+          "minItems": 1,
+          "description": "Course formats with mode and optional duration"
         },
         "audience": {
           "type": "object",
@@ -166,8 +177,30 @@
           "type": "object",
           "properties": {
             "courseDescription": {
-              "type": "string",
-              "description": "Custom filename for course description PDF"
+              "oneOf": [
+                {
+                  "type": "string",
+                  "description": "Custom filename for course description PDF (single format)"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["mode", "title"],
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "description": "Mode matching metadata.format[].mode"
+                      },
+                      "title": {
+                        "type": "string",
+                        "description": "Custom PDF filename for this mode"
+                      }
+                    }
+                  },
+                  "description": "Custom filenames per format mode"
+                }
+              ]
             }
           }
         }
