@@ -1,13 +1,17 @@
 {
   "metadata": {
-    "projectId": "PROJ-1234",
-    "courseId": "1234",
-    "courseTitle": "Using Prerequisites in Metadata",
-    "slug": "metaprereqs",
+    "courseId": "EDU-1234",
+    "projectId": "56-7890",
+    "courseTitle": "Using id in metadata",
+    "slug": "id-metadata",
     "description": "Stuff you need to know!",
     "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
-    "modality": "Instructor-led",
-    "duration": "13.5 hours",
+    "format": [
+      {
+        "mode": "eLearning",
+        "duration": "5 hour(s)"
+      }
+    ],
     "audience": {
       "role": ["sysadmin", "power user"],
       "internal": ["professional services", "sales engineer"],

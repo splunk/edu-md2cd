@@ -62,7 +62,14 @@ export class LoadStage extends Stage {
                 context.customOutputFilename = manifest.output.pdfs.courseDescription;
             }
 
-            logger.info(`  Course: ${context.metadata.courseTitle} (${context.metadata.courseId})`);
+            // Log course information with projectId and optional courseId
+            const projectId = context.metadata.projectId;
+            const courseId = context.metadata.courseId;
+            if (courseId) {
+                logger.info(`  Course: ${context.metadata.courseTitle} (Project: ${projectId}, Course: ${courseId})`);
+            } else {
+                logger.info(`  Course: ${context.metadata.courseTitle} (Project: ${projectId})`);
+            }
         } catch (error) {
             context.addError(error.message, this.name);
             throw error;

@@ -14,13 +14,30 @@ export function getCourseTitle(metadata) {
     return courseTitle;
 }
 
+export function getProjectId(metadata) {
+    // Get project ID (required field)
+    const projectId = metadata?.metadata?.projectId || metadata?.project_id;
+    if (projectId === undefined) {
+        throw new Error("No 'projectId' or 'project_id' found in the metadata");
+    }
+    return projectId;
+}
+
 export function getCourseId(metadata) {
     // Support manifest.json (courseId or id) and legacy YAML (course_id)
+    // Falls back to projectId if courseId is not present
     const courseId = metadata?.metadata?.courseId || metadata?.metadata?.id || metadata?.course_id;
-    if (courseId === undefined) {
-        throw new Error("No 'courseId', 'id', or 'course_id' found in the metadata");
+    if (courseId !== undefined) {
+        return courseId;
     }
-    return courseId;
+    
+    // Fallback to projectId
+    const projectId = metadata?.metadata?.projectId || metadata?.project_id;
+    if (projectId !== undefined) {
+        return projectId;
+    }
+    
+    throw new Error("No 'courseId', 'id', 'projectId', or legacy identifiers found in the metadata");
 }
 
 export function getVersion(metadata) {

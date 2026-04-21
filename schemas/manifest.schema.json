@@ -8,11 +8,15 @@
   "properties": {
     "metadata": {
       "type": "object",
-      "required": ["courseId", "courseTitle", "splunk"],
+      "required": ["projectId", "courseTitle", "splunk"],
       "properties": {
+        "projectId": {
+          "type": "string",
+          "description": "Internal project identifier for development tracking (required)"
+        },
         "courseId": {
           "type": "string",
-          "description": "Course identifier (e.g., '1001', '1234')"
+          "description": "Course identifier (e.g., 'EDU-1001', '1234') - generated upon course completion"
         },
         "courseTitle": {
           "type": "string",

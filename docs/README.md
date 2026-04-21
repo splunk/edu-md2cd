@@ -117,12 +117,17 @@ Here's an example
 {
   "metadata": {
     "courseId": "1234",
+    "projectId": "56-7890",
     "courseTitle": "Example Course",
     "slug": "example-course",
     "description": "Look at this!",
     "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
-    "modality": "ILT",
-    "duration": "13.5 hours",
+    "format": [
+      {
+        "mode": "eLearning",
+        "duration": "5 hour(s)"
+      }
+    ],
     "audience": {
       "role": ["sysadmin", "power user"],
       "internal": ["professional services", "sales engineer"],
@@ -182,6 +187,23 @@ The `md2cd` tool supports the following environment variables:
 The tool features a yaml-to-json migrator that will convert your existing `metadata.yaml` file to a `manifest.json` file. It's not backwards compatible, though, so you can't use the configurations availalable in the `manifest.json` in your `metadata.yaml`. If you want to use custom inputs and outputs, plugins, and themes, you will need to use a `manifest.json` file. 
 
 
+## Using multiple formats
+
+If there are multiple delivery methods for your course and each requires a different description, you can specify that in the `format` object: 
+```json
+    "format": [
+      {
+        "mode": "eLearning",
+        "duration": "5 hour(s)"
+      },
+      {
+        "mode": "Instructor-led training",
+        "duration": "13.5 hour(s)"
+      }
+    ],
+```
+
+
 ## Using custom inputs
 
 The `md2cd` tool expects to find a Markdown file ending with `-course-description.md` at the base of the course directory. You can override this and specify a custom input file and directory using the `courseDescription` key in the `input` object. For example: 
@@ -199,6 +221,25 @@ The `md2cd` tool create a default `./dist` directory for its output. You can ove
     "destination": "./path/to/custom/output/dir",
     "pdfs": {
       "courseDescription": "custom-filename.pdf"
+    }
+  }
+```
+
+If multiple formats are specified and custom output is also specified, then `pdfs.courseDescription` field must reflect the `metadata.format` field:
+```json
+  "output": {
+    "destination": "./custom-directory",
+    "pdfs": {
+      "courseDescription": [
+        {
+          "mode": "eLearning",
+          "title": "custom-filename-eln.pdf"
+        },
+        {
+          "mode": "Instructor-led training",
+          "title": "custom-filename-ilt.pdf"
+        }
+      ]
     }
   }
 ```

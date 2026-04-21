@@ -1,5 +1,5 @@
 import { Stage } from '../pipeline.js';
-import { getCourseId, getCourseTitle, getVersion } from '../utils/metadataHandler.js';
+import { getCourseId, getCourseTitle, getVersion, getProjectId } from '../utils/metadataHandler.js';
 import { validateModality, validatePrerequisites } from '../utils/validator.js';
 import logger from '../utils/logger.js';
 import fs from 'fs';
@@ -23,7 +23,8 @@ export class ValidateStage extends Stage {
 
         try {
             // Validate required metadata fields
-            const courseId = getCourseId(context.manifest);
+            const projectId = getProjectId(context.manifest); // Required field
+            const courseId = getCourseId(context.manifest); // Will fallback to projectId
             const courseTitle = getCourseTitle(context.manifest);
             const version = getVersion(context.manifest);
 
@@ -58,7 +59,13 @@ export class ValidateStage extends Stage {
                 return;
             }
 
-            logger.info(`  Validated: ${courseTitle} (${courseId})`);
+            // Log validation results
+            const hasCourseId = context.manifest?.metadata?.courseId;
+            if (hasCourseId) {
+                logger.info(`  Validated: ${courseTitle} (Project: ${projectId}, Course: ${courseId})`);
+            } else {
+                logger.info(`  Validated: ${courseTitle} (Project: ${projectId})`);
+            }
             if (version) {
                 logger.info(`  Version: ${version}`);
             }
