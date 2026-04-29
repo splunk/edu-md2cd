@@ -188,7 +188,7 @@ describe('E2E: HTML output', () => {
         expect(stdout).toContain('Karate chops');
         expect(stdout).toContain('Underwater basket weaving');
         // Optional intro text should be present
-        expect(stdout).toContain('Students should have a solid understanding of the following');
+        expect(stdout).toContain('Students are expected to have knowledge of the following topics prior to participating in the course');
     });
 });
 

@@ -22,6 +22,8 @@
 - ルックアップによるデータの拡張
 - データモデル
 
+<!-- ⚠️ PREREQUISITES RENDER HERE. DO NOT MOVE OR REMOVE THIS COMMENT ⚠️ -->
+
 ## コース概要
 
 ### モジュール1 - Splunk Cloud概要

@@ -22,6 +22,7 @@ Additional courses and/or knowledge in these areas are also highly recommended:
 - Enriching Data with Lookups
 - Data Models
 
+<!-- ⚠️ PREREQUISITES RENDER HERE. DO NOT MOVE OR REMOVE THIS COMMENT ⚠️ -->
 
 ## Course Outline
 

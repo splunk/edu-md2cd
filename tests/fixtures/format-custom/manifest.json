@@ -1,19 +1,27 @@
 {
   "metadata": {
-    "courseId": "EDU-1234",
-    "projectId": "56-7890",
-    "courseTitle": "Using ID in metadata",
-    "slug": "id-metadata",
+    "projectId": "PROJ-1234",
+    "courseId": "format-custom",
+    "courseTitle": "Using format in metadata",
+    "slug": "format-custom",
     "description": "Stuff you need to know!",
     "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
     "format": [
       {
         "mode": "eLearning",
         "duration": "5 hours"
+      },
+      {
+        "mode": "Instructor-led training",
+        "duration": "13.5 hours"
+      },
+      {
+        "mode": "eLearning with lab exercises",
+        "duration": "1 hour"
       }
     ],
     "audience": {
-      "role": ["sysadmin", "power user"],
+      "role": ["User", "Analyst", "Admin", "Engineers", "Developers"],
       "internal": ["professional services", "sales engineer"],
       "external": ["customer-facing", "partners"]
     },
@@ -36,6 +44,20 @@
         "deployment": "Cloud",
         "version": "10.2.1"
       }
+    }
+  },
+  "output": {
+    "pdfs": {
+      "courseDescription": [
+        {
+          "filename": "custom-blended.pdf",
+          "includes": ["Instructor-led training", "eLearning"]
+        },
+        {
+          "filename": "custom-eln.pdf",
+          "includes": ["eLearning with lab exercises"]
+        }
+      ]
     }
   }
 }

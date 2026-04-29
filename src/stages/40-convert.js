@@ -72,16 +72,33 @@ export class ConvertStage extends Stage {
     }
 
     /**
-     * Insert prerequisites placeholder before Course Outline section
+     * Insert prerequisites placeholder before Course Outline section or at comment marker
      * @param {string} markdown - Markdown content
      * @returns {string} Markdown with {{PREREQUISITES}} placeholder inserted
      */
     insertPrerequisitesPlaceholder(markdown) {
         const lines = markdown.replace(/\r\n/g, '\n').split('\n');
-        const courseOutlineHeaders = pluginManager.getCourseOutlineHeaders();
-
-        // Find the Course Outline header
+        
+        // First, look for the prerequisites comment marker
+        const prerequisitesCommentPattern = /<!--\s*⚠️\s*PREREQUISITES RENDER HERE[.\s\S]*?⚠️\s*-->/i;
         let insertIndex = -1;
+        
+        for (let i = 0; i < lines.length; i++) {
+            if (prerequisitesCommentPattern.test(lines[i])) {
+                insertIndex = i;
+                break;
+            }
+        }
+        
+        // If comment found, replace it with the placeholder
+        if (insertIndex !== -1) {
+            lines[insertIndex] = '{{PREREQUISITES}}';
+            return lines.join('\n');
+        }
+        
+        // Fallback: Look for Course Outline header
+        const courseOutlineHeaders = pluginManager.getCourseOutlineHeaders();
+        
         for (let i = 0; i < lines.length; i++) {
             const trimmedLine = lines[i].trim().toLowerCase();
             if (courseOutlineHeaders.some((header) => trimmedLine === header.toLowerCase())) {

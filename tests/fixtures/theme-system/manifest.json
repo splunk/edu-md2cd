@@ -6,7 +6,7 @@
     "slug": "themes-course",
     "description": "Themes fun!",
     "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
-    "modality": "Instructor-led",
+    "modality": "Instructor-led training",
     "duration": "13.5 hours",
     "audience": {
       "role": ["sysadmin", "power user"],

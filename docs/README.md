@@ -6,6 +6,18 @@ Use `@splunk-edu/md2cd` to convert course descriptions written in Markdown to PD
 * Using `manifest.json`
 
 
+## Using the Markdown template
+
+This tool expects to find this comment in the Markdown template: 
+```
+<!-- ⚠️ PREREQUISITES RENDER HERE. DO NOT MOVE OR REMOVE THIS COMMENT ⚠️ -->
+```
+
+Read it and heed it! 
+
+The prerequisites and the callout box featuring Format, Duration and Audience are generated from the metadata in your `manifest.json` file. The tool searches for this comment and renders these elements directly below it. If you remove this comment, your render will fail. If you move this comment, you'll break the design. 
+
+
 ## Using the CLI 
 
 You can generate one course description or recursively generate multiple course descriptions with `md2cd`.
@@ -116,8 +128,9 @@ Here's an example
 ```json
 {
   "metadata": {
-    "courseId": "1234",
+    "courseId": "splunk-course",
     "projectId": "56-7890",
+    "lmsId": "EDU-1234",
     "courseTitle": "Example Course",
     "slug": "example-course",
     "description": "Look at this!",
@@ -187,21 +200,55 @@ The `md2cd` tool supports the following environment variables:
 The tool features a yaml-to-json migrator that will convert your existing `metadata.yaml` file to a `manifest.json` file. It's not backwards compatible, though, so you can't use the configurations availalable in the `manifest.json` in your `metadata.yaml`. If you want to use custom inputs and outputs, plugins, and themes, you will need to use a `manifest.json` file. 
 
 
+## Specifying prerequisites
+Specify your prerequisites using the `metadata.prerequisites.courses` and `metadata.prerequisites.competencies` fields: 
+```json
+    "prerequisites": {
+      "courses": [
+        "Splunk Enterprise System Administration",
+        "Troubleshooting Splunk Enterprise",
+        "Splunk Enterprise Cluster Administration"
+      ],
+      "competencies": [
+        "Linux chops",
+        "Karate chops"
+      ]
+    },
+```
+
+If there are no prerequisites, enter `None` in either or both the `courses` and `competencies` arrays. This will render "None" in both lists on the PDF. 
+
+
 ## Using multiple formats
 
-If there are multiple delivery methods for your course and each requires a different description, you can specify that in the `format` object: 
+If there are multiple delivery methods for your course, you can specify that in the `format` array by adding additional objects: 
 ```json
     "format": [
       {
         "mode": "eLearning",
-        "duration": "5 hour(s)"
+        "duration": "5 hours"
       },
       {
         "mode": "Instructor-led training",
-        "duration": "13.5 hour(s)"
+        "duration": "13.5 hours"
       }
     ],
 ```
+
+These are the available options for `mode`:
+* "Instructor-led training"
+* "eLearning"
+* "eLearning with lab exercises"
+* "Blended"
+* "Lab experience"
+
+⚠️ These values must be an exact match for standardization across course descriptions. 
+
+Use `hour` or `hours`. Do not use the abbreviation `hrs`. 
+
+Note the following: 
+* If more than one format is specified, all modes will be combined in one PDF, listed in a table in the callout box. 
+* You can override this default behavior by configuring the `output` field. See below. 
 
 
 ## Using custom inputs
@@ -225,24 +272,38 @@ The `md2cd` tool create a default `./dist` directory for its output. You can ove
   }
 ```
 
-If multiple formats are specified and custom output is also specified, then `pdfs.courseDescription` field must reflect the `metadata.format` field:
+If you specified multiple formats, `md2cd`will output a combined PDF by default. You can override this behavior using the `output.pdfs.courseDescription.format` field and the value `split`: 
 ```json
   "output": {
-    "destination": "./custom-directory",
+    "pdfs": {
+      "courseDescription": {
+        "format": "split"
+      }
+    }
+  }
+```
+
+This will generate a separate PDF for each format using the slug as the title with the mode appended.
+
+If you want to configure which formats are combined and which are split, you can pass `output.pdfs.courseDescription` an array of objects specifying this using the `filename` and `includes` fields: 
+```json
+  "output": {
     "pdfs": {
       "courseDescription": [
         {
-          "mode": "eLearning",
-          "title": "custom-filename-eln.pdf"
+          "filename": "custom-blended.pdf",
+          "includes": ["Instructor-led training", "eLearning"]
         },
         {
-          "mode": "Instructor-led training",
-          "title": "custom-filename-ilt.pdf"
+          "filename": "custom-eln.pdf",
+          "includes": ["eLearning with lab exercises"]
         }
       ]
     }
   }
 ```
+
+You must specify an output for each format listed in your metadata and the modes listed in `includes` must match. 
 
 
 ## Using themes

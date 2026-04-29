@@ -113,13 +113,9 @@ export function getCourseAudience(metadata) {
         throw new Error("No 'audience' found in the metadata");
     }
 
-    // If audience is an object with role/internal/external, flatten all arrays
+    // If audience is an object with role/internal/external, return only role
     if (typeof audience === 'object' && !Array.isArray(audience)) {
-        const allAudiences = [];
-        if (Array.isArray(audience.role)) allAudiences.push(...audience.role);
-        if (Array.isArray(audience.internal)) allAudiences.push(...audience.internal);
-        if (Array.isArray(audience.external)) allAudiences.push(...audience.external);
-        return allAudiences.length > 0 ? allAudiences : undefined;
+        return Array.isArray(audience.role) ? audience.role : undefined;
     }
 
     return audience;
@@ -160,7 +156,7 @@ export function generatePrerequisitesMarkdown(metadata) {
     // Add competencies if present
     if (prerequisites.competencies && prerequisites.competencies.length > 0) {
         lines.push('');
-        lines.push('Students should have a solid understanding of the following:');
+        lines.push('Students are expected to have knowledge of the following topics prior to participating in the course:');
         lines.push('');
         prerequisites.competencies.forEach((skill) => {
             lines.push(`- ${skill}`);

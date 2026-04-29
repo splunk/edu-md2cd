@@ -1,5 +1,6 @@
 import {
     getCourseFormat,
+    getCourseFormats,
     getCourseDuration,
     getCourseAudience,
     getCourseTitle,
@@ -18,16 +19,19 @@ import pluginManager from '../../plugins/pluginLoader.js';
  * @param {Object} manifest - Manifest object
  * @param {Object} icons - Icons object {iconFormat, iconDuration, iconAudience}
  * @param {number} formatIndex - Index of format to use (default: 0)
+ * @param {boolean} showSingleFormat - If true, show only single format even if multiple exist
+ * @param {Array} customFormats - Optional array of format objects to display instead of manifest formats
  * @returns {string} HTML
  */
-export function buildMetadataSection(manifest, icons, formatIndex = 0) {
-    const courseFormat =
-        pluginManager.getFieldOverride('modality') ||
-        pluginManager.translateValue(getCourseFormat(manifest, formatIndex));
-    const courseDuration =
-        pluginManager.getFieldOverride('duration') ||
-        pluginManager.translateValue(getCourseDuration(manifest, formatIndex));
+export function buildMetadataSection(manifest, icons, formatIndex = 0, showSingleFormat = false, customFormats = null) {
+    // Get all formats (use custom formats if provided)
+    const formats = customFormats || getCourseFormats(manifest);
+    const hasMultipleFormats = formats.length > 1 && !showSingleFormat;
 
+    // Handle plugin overrides for single format display
+    const modalityOverride = pluginManager.getFieldOverride('modality');
+    const durationOverride = pluginManager.getFieldOverride('duration');
+    
     let courseAudience = getCourseAudience(manifest);
     const audienceOverride = pluginManager.getFieldOverride('audience');
     if (audienceOverride) {
@@ -40,49 +44,83 @@ export function buildMetadataSection(manifest, icons, formatIndex = 0) {
     const durationLabel = pluginManager.getLabel('duration', 'Duration');
     const audienceLabel = pluginManager.getLabel('audience', 'Audience');
 
-    return `
-    <div class="metadata">
-      ${
-          courseFormat
-              ? `<p class="metadata-line">
-              <span class="metadata-key">
-                <span class="metadata-icon">${icons.iconFormat}</span>
-                <strong>${formatLabel}:</strong>
-              </span>
-              <span class="metadata-value">${courseFormat}</span>
-            </p>`
-              : ''
-      }
-      ${
-          courseDuration
-              ? `<p class="metadata-line">
-              <span class="metadata-key">
-                <span class="metadata-icon">${icons.iconDuration}</span>
-                <strong>${durationLabel}:</strong>
-              </span>
-              <span class="metadata-value">${courseDuration}</span>
-            </p>`
-              : ''
-      }
-      ${
-          courseAudience && Array.isArray(courseAudience)
-              ? `<div class="metadata-line">
-              <span class="metadata-key">
-                <span class="metadata-icon">${icons.iconAudience}</span>
-                <strong>${audienceLabel}:</strong>
-              </span>
-              <div class="metadata-value">
-                ${
-                    courseAudience.length > 1
-                        ? `<ul class="metadata-list">
-                        ${courseAudience.map((item) => `<li>${item}</li>`).join('')}
-                      </ul>`
-                        : `<span>${courseAudience[0]}</span>`
-                }
+    // Build format section HTML
+    let formatHtml;
+    
+    if (hasMultipleFormats && !modalityOverride && !durationOverride) {
+        // Multiple formats: display as a table
+        const tableRows = formats.map(format => {
+            const mode = pluginManager.translateValue(format.mode);
+            const duration = format.duration ? pluginManager.translateValue(format.duration) : '';
+            return `
+                <tr>
+                  <td>${mode}</td>
+                  <td>${duration}</td>
+                </tr>`;
+        }).join('');
+
+        formatHtml = `
+          <div class="metadata-section">
+            <table class="format-table">
+              <thead>
+                <tr>
+                  <th>${formatLabel}</th>
+                  <th>${durationLabel}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+          </div>`;
+    } else {
+        // Single format or plugin overrides: use original layout
+        const courseFormat = modalityOverride ||
+            pluginManager.translateValue(getCourseFormat(manifest, formatIndex));
+        const courseDuration = durationOverride ||
+            pluginManager.translateValue(getCourseDuration(manifest, formatIndex));
+
+        formatHtml = `
+          ${
+              courseFormat
+                  ? `<p class="metadata-line">
+                  <span class="metadata-key">
+                    <strong>${formatLabel}:</strong>
+                  </span>
+                  <span class="metadata-value">${courseFormat}</span>
+                </p>`
+                  : ''
+          }
+          ${
+              courseDuration
+                  ? `<p class="metadata-line">
+                  <span class="metadata-key">
+                    <strong>${durationLabel}:</strong>
+                  </span>
+                  <span class="metadata-value">${courseDuration}</span>
+                </p>`
+                  : ''
+          }`;
+    }
+
+    // Build audience section HTML
+    const audienceHtml = courseAudience && Array.isArray(courseAudience)
+        ? `<div class="metadata-section">
+              <div class="metadata-header">
+                <strong>${audienceLabel}</strong>
+              </div>
+              <div class="metadata-content">
+                <ul class="metadata-list">
+                  ${courseAudience.map((item) => `<li>${item}</li>`).join('')}
+                </ul>
               </div>
             </div>`
-              : ''
-      }
+        : '';
+
+    return `
+    <div class="metadata">
+      ${formatHtml}
+      ${audienceHtml}
     </div>
   `;
 }
@@ -131,9 +169,11 @@ export function buildHeader(themeName, logoBase64, _manifest) {
  * @param {string} themeName - Theme name
  * @param {string} prereqMarkdown - Prerequisites markdown content
  * @param {number} formatIndex - Index of format to use (default: 0)
+ * @param {boolean} showSingleFormat - If true, show only single format even if multiple exist
+ * @param {Array} customFormats - Optional array of format objects to display instead of manifest formats
  * @returns {Promise<string>} Complete HTML document
  */
-export async function buildFullHtml(manifest, bodyContent, themeName, prereqMarkdown = null, formatIndex = 0) {
+export async function buildFullHtml(manifest, bodyContent, themeName, prereqMarkdown = null, formatIndex = 0, showSingleFormat = false, customFormats = null) {
     const css = loadThemeCss(themeName);
     const icons = loadThemeIcons(themeName);
     const logoFilename = await getThemeLogoFilename(themeName);
@@ -150,7 +190,7 @@ export async function buildFullHtml(manifest, bodyContent, themeName, prereqMark
     const header = buildHeader(themeName, logoBase64, manifest);
 
     // Build metadata section
-    const metadataHtml = buildMetadataSection(manifest, icons, formatIndex);
+    const metadataHtml = buildMetadataSection(manifest, icons, formatIndex, showSingleFormat, customFormats);
 
     // Build prerequisites with metadata
     const prereqHtml = buildPrerequisitesSection(prereqMarkdown, metadataHtml);

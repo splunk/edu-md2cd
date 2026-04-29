@@ -126,7 +126,7 @@ li {
 }
 
 .two-col .metadata {
-    flex: 2;
+    flex: 2.3;
     background-color: #f5f5f5;
     padding: 20px;
     border-left: 5px solid #ccc;
@@ -153,6 +153,7 @@ li {
     align-items: center;
     flex-shrink: 0;
     width: 40%;
+    padding-left: 0.5em;
 }
 
 .metadata-value {
@@ -169,4 +170,44 @@ li {
     margin: 0;
     padding-left: 1.5em;
     list-style-position: outside;
+}
+
+/* Metadata section for grouped content */
+.metadata-section {
+    margin: 0.5em 0;
+}
+
+.metadata-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5em;
+    padding-left: 0.5em;
+}
+
+.metadata-content {
+    margin-left: 20px;
+}
+
+/* Format table for multiple modes */
+.format-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5em;
+}
+
+.format-table th,
+.format-table td {
+    text-align: left;
+    padding: 0.4em 0.5em;
+    border: none;
+    white-space: nowrap;
+}
+
+.format-table th {
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+}
+
+.format-table tbody tr {
+    border: none;
 }

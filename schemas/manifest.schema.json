@@ -8,15 +8,19 @@
   "properties": {
     "metadata": {
       "type": "object",
-      "required": ["projectId", "courseTitle", "splunk"],
+      "required": ["courseId", "courseTitle", "splunk"],
       "properties": {
         "projectId": {
           "type": "string",
-          "description": "Internal project identifier for development tracking (required)"
+          "description": "Internal project identifier for development tracking"
         },
         "courseId": {
           "type": "string",
-          "description": "Course identifier (e.g., 'EDU-1001', '1234') - generated upon course completion"
+          "description": "Course identifier (e.g., 'splunk-course', '1234')"
+        },
+        "lmsId": {
+          "type": "string",
+          "description": "Learning Management System identifier (e.g., 'EDU-1234')"
         },
         "courseTitle": {
           "type": "string",
@@ -51,12 +55,13 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": ["eLearning", "eLearning with lab exercises", "Instructor-led", "Instructor-led training", "Instructor-led with lab exercises", "Lab exercises only"],
-                "description": "Course delivery mode"
+                "enum": ["Instructor-led training", "eLearning", "eLearning with lab exercises", "Blended", "Lab experience"],
+                "description": "Course delivery mode (must match exactly)"
               },
               "duration": {
                 "type": "string",
-                "description": "Course duration for this format (e.g., '18 hour(s)', '5 hour(s)')"
+                "pattern": "^(1(\\.0+)? hour|(0(\\.\\d+)?|([2-9]|[1-9]\\d+)(\\.\\d+)?|1\\.\\d*[1-9]\\d*) hours)$",
+                "description": "Course duration (e.g., '1 hour', '5 hours', '13.5 hours'). Use 'hour' for values <= 1, 'hours' for values > 1"
               }
             }
           },
@@ -85,7 +90,7 @@
         },
         "prerequisites": {
           "type": "object",
-          "required": ["courses"],
+          "required": ["courses", "competencies"],
           "properties": {
             "courses": {
               "type": "array",
@@ -96,6 +101,7 @@
             "competencies": {
               "type": "array",
               "items": { "type": "string" },
+              "minItems": 1,
               "description": "Skills, knowledge, or competencies students should have"
             }
           },
@@ -203,6 +209,44 @@
                     }
                   },
                   "description": "Custom filenames per format mode"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "filename": {
+                      "type": "string",
+                      "description": "Custom base filename for PDF(s)"
+                    },
+                    "format": {
+                      "type": "string",
+                      "enum": ["combined", "split"],
+                      "description": "PDF generation strategy: 'combined' (default, single PDF with table) or 'split' (one PDF per format)"
+                    }
+                  },
+                  "description": "PDF generation configuration object"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["filename", "includes"],
+                    "properties": {
+                      "filename": {
+                        "type": "string",
+                        "description": "Custom filename for this PDF"
+                      },
+                      "includes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1,
+                        "description": "Array of format mode names to include in this PDF (must match metadata.format[].mode values)"
+                      }
+                    }
+                  },
+                  "minItems": 1,
+                  "description": "Custom format combinations - array of PDF configurations with specific format includes"
                 }
               ]
             }

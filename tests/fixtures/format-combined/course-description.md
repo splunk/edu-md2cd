@@ -8,6 +8,7 @@ The course provides administrators with the opportunity to gain the skills, know
 
 Note: Splunk Cloud Administration and Transitioning to Splunk Cloud SHOULD NOT be taken together as both are designed to develop Splunk Cloud-specific skills and as such there is some overlap.
 
+<!-- ⚠️ PREREQUISITES RENDER HERE. DO NOT MOVE OR REMOVE THIS COMMENT ⚠️ -->
 
 ## Course Outline
 
