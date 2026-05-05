@@ -11,8 +11,8 @@
         "duration": "5 hours"
       }
     ],
-    "audience": {
-      "role": ["admin"]
+    "roles": {
+      "customer": ["admin"]
     },
     "splunk": {
       "platform": {

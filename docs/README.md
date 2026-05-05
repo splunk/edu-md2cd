@@ -141,10 +141,9 @@ Here's an example
         "duration": "5 hour(s)"
       }
     ],
-    "audience": {
-      "role": ["sysadmin", "power user"],
-      "internal": ["professional services", "sales engineer"],
-      "external": ["customer-facing", "partners"]
+    "roles": {
+      "customer": ["sysadmin", "power user"],
+      "internal": ["professional services", "sales engineer"]
     },
     "ga": "2025-11-01",
     "updated": "2026-01-21",

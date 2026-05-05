@@ -20,10 +20,9 @@
         "duration": "1 hour"
       }
     ],
-    "audience": {
-      "role": ["User", "Analyst", "Admin", "Engineers", "Developers"],
-      "internal": ["professional services", "sales engineer"],
-      "external": ["customer-facing", "partners"]
+    "roles": {
+      "customer": ["User", "Analyst", "Admin", "Engineers", "Developers"],
+      "internal": ["professional services", "sales engineer"]
     },
     "prerequisites": {
       "courses": [

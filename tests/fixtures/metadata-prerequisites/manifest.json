@@ -8,10 +8,9 @@
     "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
     "modality": "Instructor-led training",
     "duration": "13.5 hours",
-    "audience": {
-      "role": ["sysadmin", "power user"],
-      "internal": ["professional services", "sales engineer"],
-      "external": ["customer-facing", "partners"]
+    "roles": {
+      "customer": ["sysadmin", "power user"],
+      "internal": ["professional services", "sales engineer"]
     },
     "prerequisites": {
       "courses": [

@@ -7,10 +7,9 @@
     "courseDeveloper": "Splunk EDU",
     "modality": "Instructor-led training",
     "duration": "18 hours",
-    "audience": {
-      "role": ["Splunk Cloud Administrators"],
-      "internal": [],
-      "external": []
+    "roles": {
+      "customer": ["Splunk Cloud Administrators"],
+      "internal": []
     },
     "updated": "2026-02-02",
     "splunk": {

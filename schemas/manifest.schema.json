@@ -68,10 +68,10 @@
           "minItems": 1,
           "description": "Course formats with mode and optional duration"
         },
-        "audience": {
+        "roles": {
           "type": "object",
           "properties": {
-            "role": {
+            "customer": {
               "type": "array",
               "items": { "type": "string" },
               "description": "Target roles for this course"
@@ -80,11 +80,6 @@
               "type": "array",
               "items": { "type": "string" },
               "description": "Internal audience segments"
-            },
-            "external": {
-              "type": "array",
-              "items": { "type": "string" },
-              "description": "External audience segments"
             }
           }
         },

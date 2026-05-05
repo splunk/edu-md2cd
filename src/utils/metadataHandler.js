@@ -108,17 +108,19 @@ export function getCourseDuration(metadata, formatIndex = 0) {
 
 export function getCourseAudience(metadata) {
     // Support new object structure, old array, and legacy YAML
-    const audience = metadata?.metadata?.audience || metadata?.audience;
-    if (audience === undefined) {
-        throw new Error("No 'audience' found in the metadata");
+    const roles = metadata?.metadata?.roles || metadata?.metadata?.audience || metadata?.audience;
+    if (roles === undefined) {
+        throw new Error("No 'roles' or 'audience' found in the metadata");
     }
 
-    // If audience is an object with role/internal/external, return only role
-    if (typeof audience === 'object' && !Array.isArray(audience)) {
-        return Array.isArray(audience.role) ? audience.role : undefined;
+    // If roles is an object with customer/internal, return only customer
+    // Also support legacy audience.role for backward compatibility
+    if (typeof roles === 'object' && !Array.isArray(roles)) {
+        return Array.isArray(roles.customer) ? roles.customer : 
+               Array.isArray(roles.role) ? roles.role : undefined;
     }
 
-    return audience;
+    return roles;
 }
 
 export function slugify(text) {
