@@ -62,14 +62,14 @@ export class LoadStage extends Stage {
                 context.customOutputFilename = manifest.output.pdfs.courseDescription;
             }
 
-            // Log course information with projectId and optional courseId
+            // Log course information
             const projectId = context.metadata.projectId;
             const courseId = context.metadata.courseId;
-            if (courseId) {
-                logger.info(`  Course: ${context.metadata.courseTitle} (Project: ${projectId}, Course: ${courseId})`);
-            } else {
-                logger.info(`  Course: ${context.metadata.courseTitle} (Project: ${projectId})`);
-            }
+            const idParts = [];
+            if (projectId) idParts.push(`Project: ${projectId}`);
+            if (courseId) idParts.push(`Course: ${courseId}`);
+            const idInfo = idParts.length > 0 ? ` (${idParts.join(', ')})` : '';
+            logger.info(`  Course: ${context.metadata.courseTitle}${idInfo}`);
         } catch (error) {
             context.addError(error.message, this.name);
             throw error;

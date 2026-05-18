@@ -23,13 +23,16 @@ export class ValidateStage extends Stage {
 
         try {
             // Validate required metadata fields
-            const projectId = getProjectId(context.manifest); // Required field
-            const courseId = getCourseId(context.manifest); // Will fallback to projectId
+            const projectId = getProjectId(context.manifest); // Optional field
+            const courseId = getCourseId(context.manifest); // Required field
             const courseTitle = getCourseTitle(context.manifest);
             const version = getVersion(context.manifest);
 
             if (!version) {
                 context.addWarning("No 'version' found in metadata", this.name);
+            }
+            if (!projectId) {
+                context.addWarning("No 'projectId' found in metadata", this.name);
             }
 
             // Validate modality/format field
@@ -60,12 +63,11 @@ export class ValidateStage extends Stage {
             }
 
             // Log validation results
-            const hasCourseId = context.manifest?.metadata?.courseId;
-            if (hasCourseId) {
-                logger.info(`  Validated: ${courseTitle} (Project: ${projectId}, Course: ${courseId})`);
-            } else {
-                logger.info(`  Validated: ${courseTitle} (Project: ${projectId})`);
-            }
+            const idParts = [];
+            if (projectId) idParts.push(`Project: ${projectId}`);
+            if (courseId) idParts.push(`Course: ${courseId}`);
+            const idInfo = idParts.length > 0 ? ` (${idParts.join(', ')})` : '';
+            logger.info(`  Validated: ${courseTitle}${idInfo}`);
             if (version) {
                 logger.info(`  Version: ${version}`);
             }

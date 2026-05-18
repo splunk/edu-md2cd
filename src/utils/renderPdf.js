@@ -10,79 +10,99 @@ import { loadThemeConfig, getThemeAssetPath, getThemeFooterLogoFilename } from '
  */
 export async function renderHtmlToPdf(html) {
     let browser;
+    const maxRetries = 3;
+    let lastError;
     
-    try {
-        // Launch browser with args for better Windows compatibility
-        browser = await puppeteer.launch({
-            headless: true,
-            // Increase protocol timeout for Windows (helps with slow startup)
-            protocolTimeout: 180000, // 3 minutes
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
-                '--disable-gpu',
-                '--disable-software-rasterizer',
-                '--disable-extensions',
-                '--disable-background-networking',
-                '--disable-background-timer-throttling',
-                '--disable-backgrounding-occluded-windows',
-                '--disable-breakpad',
-                '--disable-component-extensions-with-background-pages',
-                '--disable-features=TranslateUI',
-                '--disable-ipc-flooding-protection',
-                '--disable-renderer-backgrounding',
-                '--enable-features=NetworkService,NetworkServiceInProcess',
-                '--force-color-profile=srgb',
-                '--hide-scrollbars',
-                '--metrics-recording-only',
-                '--mute-audio',
-                '--no-first-run',
-                '--disable-crash-reporter'
-            ],
-            ignoreHTTPSErrors: true,
-            // Enable dumpio for debugging if needed (logs Chrome output)
-            dumpio: false
-        });
+    // Try multiple times with different configurations
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            // Launch browser with args for better Windows compatibility
+            browser = await puppeteer.launch({
+                headless: true,
+                // Use pipe instead of websocket - more stable on Windows
+                pipe: true,
+                // Increase protocol timeout for Windows (helps with slow startup)
+                protocolTimeout: 180000, // 3 minutes
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-accelerated-2d-canvas',
+                    '--disable-gpu',
+                    '--disable-software-rasterizer',
+                    '--disable-extensions',
+                    '--disable-background-networking',
+                    '--disable-background-timer-throttling',
+                    '--disable-backgrounding-occluded-windows',
+                    '--disable-breakpad',
+                    '--disable-component-extensions-with-background-pages',
+                    '--disable-features=TranslateUI,Translate',
+                    '--disable-ipc-flooding-protection',
+                    '--disable-renderer-backgrounding',
+                    '--enable-features=NetworkService,NetworkServiceInProcess',
+                    '--force-color-profile=srgb',
+                    '--hide-scrollbars',
+                    '--metrics-recording-only',
+                    '--mute-audio',
+                    '--no-first-run',
+                    '--disable-crash-reporter',
+                    '--single-process' // More stable on Windows but slower
+                ],
+                ignoreHTTPSErrors: true,
+                // Enable dumpio for debugging if needed (logs Chrome output)
+                dumpio: false
+            });
         
         const page = await browser.newPage();
-        
-        // Set longer timeout and use more forgiving wait strategy
-        page.setDefaultTimeout(60000);
-        page.setDefaultNavigationTimeout(60000);
-        
-        // Use domcontentloaded instead of networkidle0 since all assets are embedded
-        await page.setContent(html, { 
-            waitUntil: 'domcontentloaded',
-            timeout: 30000 
-        });
+            
+            // Set longer timeout and use more forgiving wait strategy
+            page.setDefaultTimeout(60000);
+            page.setDefaultNavigationTimeout(60000);
+            
+            // Use domcontentloaded instead of networkidle0 since all assets are embedded
+            await page.setContent(html, { 
+                waitUntil: 'domcontentloaded',
+                timeout: 30000 
+            });
 
-        const pdfBuffer = await page.pdf({
-            format: 'Letter',
-            printBackground: true,
-            margin: {
-                top: '20mm',
-                right: '20mm',
-                bottom: '30mm',
-                left: '20mm',
-            },
-        });
+            const pdfBuffer = await page.pdf({
+                format: 'Letter',
+                printBackground: true,
+                margin: {
+                    top: '20mm',
+                    right: '20mm',
+                    bottom: '30mm',
+                    left: '20mm',
+                },
+            });
 
-        return pdfBuffer;
-    } catch (error) {
-        throw new Error(`Failed to generate PDF: ${error.message}`, { cause: error });
-    } finally {
-        // Always close browser, even if error occurred
-        if (browser) {
-            try {
-                await browser.close();
-            } catch (closeError) {
-                // Ignore close errors if browser already crashed
-                console.error('Warning: Error closing browser:', closeError.message);
+            // Success! Return the PDF
+            return pdfBuffer;
+            
+        } catch (error) {
+            lastError = error;
+            
+            // Log attempt failure
+            if (attempt < maxRetries) {
+                console.warn(`PDF generation attempt ${attempt} failed: ${error.message}. Retrying...`);
+                // Wait a bit before retrying
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
             }
+        } finally {
+            // Always close browser, even if error occurred
+            if (browser) {
+                try {
+                    await browser.close();
+                } catch {
+                    // Ignore close errors if browser already crashed
+                }
+            }
+            browser = null;
         }
     }
+    
+    // All retries failed
+    throw new Error(`Failed to generate PDF after ${maxRetries} attempts: ${lastError.message}`, { cause: lastError });
 }
 
 /**
