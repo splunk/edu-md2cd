@@ -9,24 +9,52 @@ import { loadThemeConfig, getThemeAssetPath, getThemeFooterLogoFilename } from '
  * @returns {Promise<Buffer>} PDF buffer
  */
 export async function renderHtmlToPdf(html) {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+    let browser;
+    
+    try {
+        // Launch browser with args for better Windows compatibility
+        browser = await puppeteer.launch({
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--disable-gpu'
+            ]
+        });
+        
+        const page = await browser.newPage();
+        
+        // Set longer timeout and use more forgiving wait strategy
+        page.setDefaultTimeout(60000);
+        
+        // Use domcontentloaded instead of networkidle0 since all assets are embedded
+        await page.setContent(html, { 
+            waitUntil: 'domcontentloaded',
+            timeout: 30000 
+        });
 
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+        const pdfBuffer = await page.pdf({
+            format: 'Letter',
+            printBackground: true,
+            margin: {
+                top: '20mm',
+                right: '20mm',
+                bottom: '30mm',
+                left: '20mm',
+            },
+        });
 
-    const pdfBuffer = await page.pdf({
-        format: 'Letter',
-        printBackground: true,
-        margin: {
-            top: '20mm',
-            right: '20mm',
-            bottom: '30mm',
-            left: '20mm',
-        },
-    });
-
-    await browser.close();
-    return pdfBuffer;
+        return pdfBuffer;
+    } catch (error) {
+        throw new Error(`Failed to generate PDF: ${error.message}`, { cause: error });
+    } finally {
+        // Always close browser, even if error occurred
+        if (browser) {
+            await browser.close();
+        }
+    }
 }
 
 /**
@@ -171,6 +199,10 @@ export async function addFooterWithLogo(pdfBuffer, themeName) {
  * @returns {Promise<Buffer>} Final PDF buffer
  */
 export async function generatePdf(html, themeName) {
-    const pdfBuffer = await renderHtmlToPdf(html);
-    return await addFooterWithLogo(pdfBuffer, themeName);
+    try {
+        const pdfBuffer = await renderHtmlToPdf(html);
+        return await addFooterWithLogo(pdfBuffer, themeName);
+    } catch (error) {
+        throw new Error(`PDF generation failed: ${error.message}`, { cause: error });
+    }
 }
