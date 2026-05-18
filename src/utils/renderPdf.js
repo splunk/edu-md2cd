@@ -15,19 +15,42 @@ export async function renderHtmlToPdf(html) {
         // Launch browser with args for better Windows compatibility
         browser = await puppeteer.launch({
             headless: true,
+            // Increase protocol timeout for Windows (helps with slow startup)
+            protocolTimeout: 180000, // 3 minutes
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
                 '--disable-accelerated-2d-canvas',
-                '--disable-gpu'
-            ]
+                '--disable-gpu',
+                '--disable-software-rasterizer',
+                '--disable-extensions',
+                '--disable-background-networking',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-breakpad',
+                '--disable-component-extensions-with-background-pages',
+                '--disable-features=TranslateUI',
+                '--disable-ipc-flooding-protection',
+                '--disable-renderer-backgrounding',
+                '--enable-features=NetworkService,NetworkServiceInProcess',
+                '--force-color-profile=srgb',
+                '--hide-scrollbars',
+                '--metrics-recording-only',
+                '--mute-audio',
+                '--no-first-run',
+                '--disable-crash-reporter'
+            ],
+            ignoreHTTPSErrors: true,
+            // Enable dumpio for debugging if needed (logs Chrome output)
+            dumpio: false
         });
         
         const page = await browser.newPage();
         
         // Set longer timeout and use more forgiving wait strategy
         page.setDefaultTimeout(60000);
+        page.setDefaultNavigationTimeout(60000);
         
         // Use domcontentloaded instead of networkidle0 since all assets are embedded
         await page.setContent(html, { 
@@ -52,7 +75,12 @@ export async function renderHtmlToPdf(html) {
     } finally {
         // Always close browser, even if error occurred
         if (browser) {
-            await browser.close();
+            try {
+                await browser.close();
+            } catch (closeError) {
+                // Ignore close errors if browser already crashed
+                console.error('Warning: Error closing browser:', closeError.message);
+            }
         }
     }
 }
