@@ -19,8 +19,15 @@
           "description": "Course identifier (e.g., 'splunk-course', '1234')"
         },
         "lmsId": {
-          "type": "string",
-          "description": "Learning Management System identifier (e.g., 'EDU-1234')"
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1
+            }
+          ],
+          "description": "Learning Management System identifier(s) (e.g., 'EDU-1234' or ['EDU-1234', 'EDU-5678'])"
         },
         "courseTitle": {
           "type": "string",

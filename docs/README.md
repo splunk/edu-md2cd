@@ -130,7 +130,7 @@ Here's an example
   "metadata": {
     "courseId": "splunk-course",
     "projectId": "56-7890",
-    "lmsId": "EDU-1234",
+    "lmsId": ["EDU-1234", "EDU-5678"],
     "courseTitle": "Example Course",
     "slug": "example-course",
     "description": "Look at this!",
