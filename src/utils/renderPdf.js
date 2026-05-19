@@ -2,6 +2,7 @@ import puppeteer from 'puppeteer';
 import { PDFDocument, rgb } from 'pdf-lib';
 import fs from 'fs';
 import { loadThemeConfig, getThemeAssetPath, getThemeFooterLogoFilename } from './loadTheme.js';
+import { getPuppeteerLaunchOptions } from './resolveBrowserExecutable.js';
 
 /**
  * Render HTML string to PDF buffer
@@ -12,14 +13,8 @@ export async function renderHtmlToPdf(html) {
     let browser;
     
     try {
-        // Simple launch - works on most systems
-        browser = await puppeteer.launch({
-            headless: true,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox'
-            ]
-        });
+        const launchOptions = getPuppeteerLaunchOptions();
+        browser = await puppeteer.launch(launchOptions);
         
         const page = await browser.newPage();
         
