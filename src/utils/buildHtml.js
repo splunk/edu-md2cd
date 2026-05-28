@@ -184,9 +184,6 @@ export async function buildFullHtml(manifest, bodyContent, themeName, prereqMark
         ? `<style>* { font-family: ${fontFamilyOverride} !important; }</style>`
         : '';
 
-    // Add extra padding to prevent content from extending into footer area
-    const footerSpacing = `<style>body { padding-bottom: 60pt; }</style>`;
-
     const header = buildHeader(themeName, logoBase64, manifest);
 
     // Build metadata section
@@ -207,7 +204,6 @@ export async function buildFullHtml(manifest, bodyContent, themeName, prereqMark
     <title>Course Description - ${getCourseTitle(manifest)}</title>
     <style>${css}</style>
     ${fontFamilyStyle}
-    ${footerSpacing}
 </head>
 <body>
     ${header}

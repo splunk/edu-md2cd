@@ -118,16 +118,6 @@ export async function getThemeLogoFilename(themeName = DEFAULT_THEME) {
 }
 
 /**
- * Get theme-specific footer logo filename
- * @param {string} themeName - Theme name
- * @returns {Promise<string>} Footer logo filename
- */
-export async function getThemeFooterLogoFilename(themeName = DEFAULT_THEME) {
-    const config = await loadThemeConfig(themeName);
-    return config.footer.logo;
-}
-
-/**
  * Get theme constants
  * @returns {Object} {THEMES_DIR, DEFAULT_THEME}
  */
