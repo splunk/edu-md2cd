@@ -17,7 +17,8 @@ const VALID_MODALITIES = [
     'Instructor-led',
     'Instructor-led training',
     'Instructor-led with lab exercises',
-    'Lab exercises only'
+    'Lab experience',
+    'Blended'
 ];
 
 /**
