@@ -82,34 +82,32 @@ describe('E2E: dry-run mode', () => {
 
 describe('E2E: manifest migration', () => {
     const migrationDir = path.join(FIXTURES, 'manifest-migration');
-    const generatedManifest = path.join(migrationDir, 'manifest.json');
+    const generatedMetadata = path.join(migrationDir, 'metadata.yaml');
+    const generatedManifest = path.join(migrationDir, 'manifest.yaml');
 
     afterEach(async () => {
-        // Clean up generated manifest.json so the fixture stays pristine
-        try {
-            await fs.unlink(generatedManifest);
-        } catch {
-            // Ignore if not created
+        // Clean up generated files so the fixture stays pristine
+        for (const f of [generatedMetadata, generatedManifest]) {
+            try { await fs.unlink(f); } catch { /* ignore */ }
         }
     });
 
-    it('migrates metadata.yaml and creates manifest.json', async () => {
-        // Run the tool — migration will create manifest.json, but validation
-        // may fail due to legacy fields the migrator produces (e.g. input.labGuides).
-        // The important thing is that the migration itself works correctly.
+    it('migrates legacy metadata.yaml and creates metadata.yaml (new schema)', async () => {
+        // Run the tool — migration will create metadata.yaml (new schema)
         await run(['--dry-run', migrationDir]);
 
-        // Verify manifest.json was created
-        const stat = await fs.stat(generatedManifest);
+        // Verify metadata.yaml was created
+        const stat = await fs.stat(generatedMetadata);
         expect(stat.isFile()).toBe(true);
 
         // Verify migrated content is correct
-        const manifest = JSON.parse(await fs.readFile(generatedManifest, 'utf8'));
-        expect(manifest.metadata.courseId).toBe('1001');
-        expect(manifest.metadata.courseTitle).toBe('Splunk Cloud Administration');
-        expect(manifest.metadata.slug).toBe('sca');
-        expect(manifest.metadata.modality).toBe('Instructor-led training');
-        expect(manifest.metadata.duration).toBe('18 hr');
+        const { parse } = await import('yaml');
+        const metadata = parse(await fs.readFile(generatedMetadata, 'utf8'));
+        expect(metadata.metadata.courseId).toBe('1001');
+        expect(metadata.metadata.courseTitle).toBe('Splunk Cloud Administration');
+        expect(metadata.metadata.slug).toBe('sca');
+        expect(metadata.metadata.modality).toBe('Instructor-led training');
+        expect(metadata.metadata.duration).toBe('18 hr');
     });
 });
 

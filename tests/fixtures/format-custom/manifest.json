@@ -1,60 +1,19 @@
 {
-  "metadata": {
-    "projectId": "PROJ-1234",
-    "courseId": "format-custom",
-    "courseTitle": "Using format in metadata",
-    "slug": "format-custom",
-    "description": "Stuff you need to know!",
-    "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
-    "format": [
-      {
-        "mode": "eLearning",
-        "duration": "5 hours"
-      },
-      {
-        "mode": "Instructor-led training",
-        "duration": "13.5 hours"
-      },
-      {
-        "mode": "eLearning with lab exercises",
-        "duration": "1 hour"
-      }
-    ],
-    "roles": {
-      "customer": ["User", "Analyst", "Admin", "Engineers", "Developers"],
-      "internal": ["professional services", "sales engineer"]
-    },
-    "prerequisites": {
-      "courses": [
-        "Splunk Enterprise System Administration",
-        "Troubleshooting Splunk Enterprise",
-        "Splunk Enterprise Cluster Administration"
-      ],
-      "competencies": [
-        "Linux chops",
-        "Karate chops",
-        "Underwater basket weaving"
-      ]
-    },
-    "ga": "2025-11-01",
-    "updated": "2026-01-21",
-    "splunk": {
-      "platform": {
-        "deployment": "Cloud",
-        "version": "10.2.1"
-      }
-    }
-  },
   "output": {
     "pdfs": {
       "courseDescription": [
         {
           "filename": "custom-blended.pdf",
-          "includes": ["Instructor-led training", "eLearning"]
+          "includes": [
+            "Instructor-led training",
+            "eLearning"
+          ]
         },
         {
           "filename": "custom-eln.pdf",
-          "includes": ["eLearning with lab exercises"]
+          "includes": [
+            "eLearning with lab exercises"
+          ]
         }
       ]
     }

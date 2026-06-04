@@ -1,7 +1,7 @@
 // src/utils/migrator.js
 import { readFile, writeFile } from 'fs/promises';
 import { resolve } from 'path';
-import { parse as parseYaml } from 'yaml';
+import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { generateSlug } from './slugger.js';
 
 /**
@@ -115,9 +115,6 @@ function mapYamlToManifest(metadata) {
             courseId: metadata.course_id || metadata.courseId || 'unknown',
             courseTitle: metadata.course_title || metadata.courseTitle || 'Untitled Course',
         },
-        input: {
-            labGuides: './lab-guides',
-        },
     };
 
     // Generate slug if not present
@@ -217,17 +214,26 @@ export async function migrateMetadata(metadataPath, coursePath, logger) {
     // Map metadata.yaml fields to manifest.json structure
     const manifest = mapYamlToManifest(metadata);
 
-    // Write manifest.json
-    const manifestPath = resolve(coursePath, 'manifest.json');
-    await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+    // Separate metadata from any non-metadata fields (input/output from legacy YAML)
+    const { metadata: metadataObj, ...manifestRest } = manifest;
+
+    // Write metadata.yaml (the required metadata file — YAML is the default format)
+    const metadataYamlPath = resolve(coursePath, 'metadata.yaml');
+    await writeFile(metadataYamlPath, stringifyYaml({ metadata: metadataObj }));
+
+    // Write manifest.yaml only when there are non-metadata fields to preserve
+    if (Object.keys(manifestRest).length > 0) {
+        const manifestYamlPath = resolve(coursePath, 'manifest.yaml');
+        await writeFile(manifestYamlPath, stringifyYaml(manifestRest));
+    }
 
     // Inform user about migration
-    logger.info('✓ Created manifest.json');
+    logger.info('✓ Created metadata.yaml');
     logger.warn('');
-    logger.warn('metadata.yaml is deprecated');
-    logger.warn('   Your course has been migrated to manifest.json');
-    logger.warn('   Please review and commit manifest.json to your repository');
-    logger.warn('   The old metadata.yaml file can be safely deleted');
+    logger.warn('metadata.yaml (legacy schema) is deprecated');
+    logger.warn('   Your course has been migrated to metadata.yaml (new schema)');
+    logger.warn('   Please review and commit metadata.yaml to your repository');
+    logger.warn('   The old legacy metadata file can be safely deleted');
     logger.warn('');
 
     return manifest;

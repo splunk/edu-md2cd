@@ -1,11 +1,11 @@
 import { Stage } from '../pipeline.js';
-import { getManifestPath, loadManifest } from '../utils/metadataHandler.js';
+import { loadMetadataAndManifest } from '../utils/metadataHandler.js';
 import { validateManifest, formatValidationErrors } from '../utils/validator.js';
 import logger from '../utils/logger.js';
 
 /**
- * Stage 10: Load manifest.json and plugins
- * Loads the manifest file and extracts metadata, plugins, theme, etc.
+ * Stage 10: Load metadata.json + optional manifest.json and plugins.
+ * Loads both files, merges them, and extracts metadata, plugins, theme, etc.
  */
 export class LoadStage extends Stage {
     constructor() {
@@ -16,12 +16,8 @@ export class LoadStage extends Stage {
         logger.info('📦 Loading manifest...');
 
         try {
-            // Get manifest path (handles migration from metadata.yaml if needed)
-            const manifestPath = await getManifestPath(context.sourceDir);
-            context.manifestPath = manifestPath;
-
-            // Load and parse manifest
-            const manifest = await loadManifest(manifestPath);
+            // Load and merge metadata.json (required) + manifest.json (optional)
+            const manifest = await loadMetadataAndManifest(context.sourceDir);
             context.manifest = manifest;
             context.metadata = manifest.metadata;
 

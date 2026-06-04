@@ -7,35 +7,35 @@ const fixturesDir = path.join(__dirname, 'fixtures');
 const fixtures = [
     {
         name: 'boolean-prerequisites',
-        files: ['metaprereqs-course-description.md', 'manifest.json'],
+        files: ['metaprereqs-course-description.md', 'metadata.json'],
     },
     {
         name: 'custom-input',
-        files: ['custom-filename.md', 'manifest.json'],
+        files: ['custom-filename.md', 'metadata.json', 'manifest.json'],
     },
     {
         name: 'custom-output',
-        files: ['course-description.md', 'manifest.json'],
+        files: ['course-description.md', 'metadata.json', 'manifest.json'],
     },
     {
         name: 'locale-plugin',
-        files: ['jp-course-description.md', 'manifest.json'],
+        files: ['jp-course-description.md', 'metadata.json', 'manifest.json'],
     },
     {
         name: 'manifest-migration',
-        files: ['course-description.md', 'metadata.yaml'],
+        files: ['course-description.md', 'metadata.yml'],
     },
     {
         name: 'recursive-flat/advanced',
-        files: ['advanced-course-description.md', 'manifest.json'],
+        files: ['advanced-course-description.md', 'metadata.json'],
     },
     {
         name: 'recursive-flat/foundation',
-        files: ['foundation-course-description.md', 'manifest.json'],
+        files: ['foundation-course-description.md', 'metadata.json'],
     },
     {
         name: 'theme-system',
-        files: ['course-description.md', 'manifest.json'],
+        files: ['course-description.md', 'metadata.json', 'manifest.json'],
     },
 ];
 

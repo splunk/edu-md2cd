@@ -1,0 +1,24 @@
+{
+  "metadata": {
+    "projectId": "PROJ-1001",
+    "courseId": "1001",
+    "courseTitle": "Splunk Cloud Administration",
+    "slug": "sca",
+    "courseDeveloper": "Splunk EDU",
+    "modality": "Instructor-led training",
+    "duration": "18 hours",
+    "roles": {
+      "customer": [
+        "Splunk Cloud Administrators"
+      ],
+      "internal": []
+    },
+    "updated": "2026-02-02",
+    "splunk": {
+      "platform": {
+        "deployment": "Cloud",
+        "version": "9.4"
+      }
+    }
+  }
+}

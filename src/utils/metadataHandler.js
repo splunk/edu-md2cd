@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import yaml from 'js-yaml';
+import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import logger from './logger.js';
 import { migrateMetadata } from './migrator.js';
 
@@ -199,64 +199,140 @@ export function generatePrerequisitesMarkdown(metadata) {
     return lines.join('\n');
 }
 
-export async function getManifestPath(sourceDir) {
-    const manifestPath = path.join(sourceDir, 'manifest.json');
-    const yamlExtensions = ['yaml', 'yml'];
+/**
+ * Candidate filenames to search, in priority order.
+ */
+const METADATA_CANDIDATES = ['metadata.json', 'metadata.yaml', 'metadata.yml'];
+const MANIFEST_CANDIDATES = ['manifest.json', 'manifest.yaml', 'manifest.yml'];
 
-    // Check if manifest.json exists
-    try {
-        await fs.access(manifestPath);
-        return manifestPath;
-    } catch {
-        // manifest.json doesn't exist, check for metadata.yaml
+/**
+ * Parse file content as JSON or YAML depending on file extension.
+ *
+ * @param {string} filePath - Path used only to determine format
+ * @param {string} content - Raw file content
+ * @returns {Object} Parsed object
+ */
+function parseFileContent(filePath, content) {
+    if (filePath.endsWith('.json')) {
+        return JSON.parse(content);
     }
+    return parseYaml(content);
+}
 
-    // Try to find metadata.yaml or metadata.yml
-    for (const ext of yamlExtensions) {
-        const yamlPath = path.join(sourceDir, `metadata.${ext}`);
+/**
+ * Find and load the metadata file (metadata.json/.yaml/.yml) for a course
+ * directory. If a YAML file is found but uses the legacy schema (no top-level
+ * `metadata:` key), it is migrated to metadata.yaml before loading.
+ *
+ * metadata.json is checked first; YAML variants are fallbacks.
+ *
+ * @param {string} sourceDir - Course directory to search
+ * @returns {Promise<{filePath: string, data: Object}>} Resolved path and parsed object
+ */
+async function findAndLoadMetadata(sourceDir) {
+    for (const candidate of METADATA_CANDIDATES) {
+        const filePath = path.join(sourceDir, candidate);
         try {
-            await fs.access(yamlPath);
+            await fs.access(filePath);
         } catch {
-            // File doesn't exist, try next extension
             continue;
         }
 
-        // Found YAML file, migrate it (let errors propagate)
-        logger.info(`📦 Found ${path.basename(yamlPath)}, migrating to manifest.json...`);
-        await migrateMetadata(yamlPath, sourceDir, logger);
-        return manifestPath;
+        const raw = await fs.readFile(filePath, 'utf8');
+        const parsed = parseFileContent(filePath, raw);
+
+        // Detect legacy YAML: new-schema files always have a top-level `metadata` key
+        if (!parsed.metadata) {
+            logger.info(`📦 Found legacy ${candidate}, migrating to metadata.yaml...`);
+            await migrateMetadata(filePath, sourceDir, logger);
+            // Reload the freshly written metadata.yaml
+            const migratedPath = path.join(sourceDir, 'metadata.yaml');
+            const migratedRaw = await fs.readFile(migratedPath, 'utf8');
+            return { filePath: migratedPath, data: parseFileContent(migratedPath, migratedRaw) };
+        }
+
+        return { filePath, data: parsed };
     }
 
-    // No manifest or metadata file found
-    logger.error('No manifest.json or metadata.yaml/yml found');
+    logger.error('No metadata.json or metadata.yaml/yml found');
     process.exit(1);
 }
 
-export async function loadManifest(manifestPath) {
-    const manifestRaw = await fs.readFile(manifestPath, 'utf8');
-    const manifest = JSON.parse(manifestRaw);
+/**
+ * Find and load the optional manifest file (manifest.json/.yaml/.yml).
+ *
+ * @param {string} sourceDir - Course directory to search
+ * @returns {Promise<Object>} Parsed manifest object, or {} if absent
+ */
+async function findAndLoadManifest(sourceDir) {
+    for (const candidate of MANIFEST_CANDIDATES) {
+        const filePath = path.join(sourceDir, candidate);
+        try {
+            await fs.access(filePath);
+        } catch {
+            continue;
+        }
 
-    // Pad course_id if present in legacy format
-    if (manifest.metadata?.course_id) {
-        manifest.metadata.course_id = manifest.metadata.course_id.toString().padStart(4, '0');
-    }
-    // Also check for 'id' in old short format
-    if (manifest.metadata?.id) {
-        manifest.metadata.id = manifest.metadata.id.toString().padStart(4, '0');
-    }
-    // Also check for 'courseId' in new descriptive format
-    if (manifest.metadata?.courseId) {
-        manifest.metadata.courseId = manifest.metadata.courseId.toString().padStart(4, '0');
+        const raw = await fs.readFile(filePath, 'utf8');
+        logger.info(`🚚 Loading manifest ${filePath}`);
+        return parseFileContent(filePath, raw);
     }
 
-    logger.info(`🚚 Loading manifest ${manifestPath}`);
+    return {};
+}
 
-    return manifest;
+/**
+ * Return the path to the metadata file for a source directory (for legacy
+ * callers). Triggers migration if a legacy YAML is found.
+ *
+ * @param {string} sourceDir - Course directory to search
+ * @returns {Promise<string>} Absolute path to the metadata file
+ */
+export async function getMetadataFilePath(sourceDir) {
+    const { filePath } = await findAndLoadMetadata(sourceDir);
+    return filePath;
+}
+
+/**
+ * Load metadata (required) and manifest (optional) for a course directory,
+ * merging them into a single combined object. Supports JSON and YAML for
+ * both files. Legacy metadata.yaml (no `metadata:` key) is migrated
+ * automatically to metadata.yaml using the new schema.
+ *
+ * @param {string} sourceDir - Course directory to load from
+ * @returns {Promise<Object>} Merged manifest object
+ */
+export async function loadMetadataAndManifest(sourceDir) {
+    const { filePath: metadataFilePath, data: metadataFile } = await findAndLoadMetadata(sourceDir);
+
+    // Pad course IDs if needed
+    if (metadataFile.metadata?.course_id) {
+        metadataFile.metadata.course_id = metadataFile.metadata.course_id.toString().padStart(4, '0');
+    }
+    if (metadataFile.metadata?.id) {
+        metadataFile.metadata.id = metadataFile.metadata.id.toString().padStart(4, '0');
+    }
+    if (metadataFile.metadata?.courseId) {
+        metadataFile.metadata.courseId = metadataFile.metadata.courseId.toString().padStart(4, '0');
+    }
+
+    logger.info(`🚚 Loading metadata ${metadataFilePath}`);
+
+    // Optionally load manifest (JSON or YAML)
+    const manifestFile = await findAndLoadManifest(sourceDir);
+
+    // Merge: metadata file provides `metadata`; manifest provides everything else
+    return {
+        ...manifestFile,
+        metadata: metadataFile.metadata,
+    };
 }
 
 // Legacy compatibility aliases
-export const getMetadataPath = getManifestPath;
-export const loadMetadata = loadManifest;
+export const getManifestPath = getMetadataFilePath;
+export const loadManifest = loadMetadataAndManifest;
+export const getMetadataPath = getMetadataFilePath;
+export const loadMetadata = loadMetadataAndManifest;
 
 export async function updateMetadataDate(metadataPath, metadata, updatedDate) {
     if (metadata.course_id) {
@@ -265,7 +341,7 @@ export async function updateMetadataDate(metadataPath, metadata, updatedDate) {
 
     metadata.updated = updatedDate;
 
-    const newYaml = yaml.dump(metadata);
+    const newYaml = stringifyYaml(metadata);
     await fs.writeFile(metadataPath, newYaml, 'utf8');
 
     logger.info(`🏷️  Updating metadata.updated: ${updatedDate}`);

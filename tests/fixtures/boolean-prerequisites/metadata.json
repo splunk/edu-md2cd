@@ -14,10 +14,10 @@
     },
     "prerequisites": {
       "courses": [
-        "Splunk Enterprise System Administration",
+        "Architecting Splunk Enterprise Deployments",
         [
-        "Troubleshooting Splunk Enterprise",
-        "Architecting Splunk Enterprise Deployments"
+          "Troubleshooting Splunk Enterprise",
+          "Splunk Enterprise Cluster Administration"
         ],
         [ 
         "Splunk Enterprise System Administration", 

@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "projectId": "PROJ-1234",
+    "courseId": "format-combined",
+    "courseTitle": "Using format in metadata",
+    "slug": "format-combined",
+    "description": "Stuff you need to know!",
+    "courseDeveloper": [
+      "Buttercup Pwny",
+      "Splunk EDU"
+    ],
+    "format": [
+      {
+        "mode": "eLearning with lab exercises",
+        "duration": "5 hours"
+      },
+      {
+        "mode": "Instructor-led training",
+        "duration": "13.5 hours"
+      }
+    ],
+    "roles": {
+      "customer": [
+        "sysadmin",
+        "power user"
+      ],
+      "internal": [
+        "professional services",
+        "sales engineer"
+      ]
+    },
+    "prerequisites": {
+      "courses": [
+        "Splunk Enterprise System Administration",
+        "Troubleshooting Splunk Enterprise",
+        "Splunk Enterprise Cluster Administration"
+      ],
+      "competencies": [
+        "Linux chops",
+        "Karate chops",
+        "Underwater basket weaving"
+      ]
+    },
+    "ga": "2025-11-01",
+    "updated": "2026-01-21",
+    "splunk": {
+      "platform": {
+        "deployment": "Cloud",
+        "version": "10.2.1"
+      }
+    }
+  }
+}

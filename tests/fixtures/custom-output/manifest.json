@@ -1,26 +1,4 @@
 {
-  "metadata": {
-    "projectId": "PROJ-1234",
-    "courseId": "1234",
-    "courseTitle": "Custom Output",
-    "slug": "custom-output",
-    "description": "Custom fun!",
-    "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
-    "modality": "Instructor-led training",
-    "duration": "13.5 hours",
-    "roles": {
-      "customer": ["sysadmin", "power user"],
-      "internal": ["professional services", "sales engineer"]
-    },
-    "ga": "2025-11-01",
-    "updated": "2026-01-21",
-    "splunk": {
-      "platform": {
-        "deployment": "Cloud",
-        "version": "10.2.1"
-      }
-    }
-  },
   "output": {
     "destination": "./custom-directory",
     "pdfs": {
