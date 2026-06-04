@@ -31,7 +31,7 @@ function normalizeModality(legacyFormat) {
         normalized.includes('instructor') ||
         normalized.includes('classroom')
     ) {
-        return 'Instructor-led';
+        return 'Instructor-led training';
     }
     if (
         normalized.includes('elearning with lab') ||
@@ -48,8 +48,8 @@ function normalizeModality(legacyFormat) {
     ) {
         return 'eLearning';
     }
-    if (normalized.includes('lab') && normalized.includes('only')) {
-        return 'Lab exercises only';
+    if (normalized.includes('lab') && (normalized.includes('only') || normalized.includes('exercise'))) {
+        return 'Lab experience';
     }
 
     // Return as-is if can't normalize (will be caught by validation)

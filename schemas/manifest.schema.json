@@ -96,9 +96,27 @@
           "properties": {
             "courses": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "oneOf": [
+                  { "type": "string" },
+                  {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        { "type": "string" },
+                        {
+                          "type": "array",
+                          "items": { "type": "string" },
+                          "minItems": 1
+                        }
+                      ]
+                    },
+                    "minItems": 1
+                  }
+                ]
+              },
               "minItems": 1,
-              "description": "Required prerequisite courses (must be from validated list)"
+              "description": "Required prerequisite courses as strings and optional OR groups as arrays of strings"
             },
             "competencies": {
               "type": "array",

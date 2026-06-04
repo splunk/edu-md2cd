@@ -14,10 +14,9 @@ const __dirname = path.dirname(__filename);
 const VALID_MODALITIES = [
     'eLearning',
     'eLearning with lab exercises',
-    'Instructor-led',
     'Instructor-led training',
-    'Instructor-led with lab exercises',
-    'Lab exercises only'
+    'Lab experience',
+    'Blended',
 ];
 
 /**
@@ -130,12 +129,26 @@ export function validatePrerequisites(manifest) {
     }
 
     const invalidCourses = [];
-
-    // Validate each required course against the valid list
-    prerequisites.courses.forEach((course) => {
-        if (!VALID_PREREQUISITE_COURSES.includes(course)) {
-            invalidCourses.push(course);
+    const collectCourseTitles = (courseItem) => {
+        if (typeof courseItem === 'string') {
+            return [courseItem];
         }
+
+        if (Array.isArray(courseItem)) {
+            return courseItem.flatMap((courseOption) => collectCourseTitles(courseOption));
+        }
+
+        return [];
+    };
+
+    // Validate each prerequisite course title against the valid list
+    prerequisites.courses.forEach((courseItem) => {
+        const courseTitles = collectCourseTitles(courseItem);
+        courseTitles.forEach((course) => {
+            if (!VALID_PREREQUISITE_COURSES.includes(course)) {
+                invalidCourses.push(course);
+            }
+        });
     });
 
     if (invalidCourses.length > 0) {

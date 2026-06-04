@@ -108,7 +108,7 @@ describe('E2E: manifest migration', () => {
         expect(manifest.metadata.courseId).toBe('1001');
         expect(manifest.metadata.courseTitle).toBe('Splunk Cloud Administration');
         expect(manifest.metadata.slug).toBe('sca');
-        expect(manifest.metadata.modality).toBe('Instructor-led');
+        expect(manifest.metadata.modality).toBe('Instructor-led training');
         expect(manifest.metadata.duration).toBe('18 hr');
     });
 });
@@ -166,10 +166,10 @@ describe('E2E: HTML output', () => {
         expect(stdout).toContain('Cisco');
     });
 
-    it('metadata-prerequisites: generates prerequisites from metadata', async () => {
+    it('boolean-prerequisites: generates prerequisites from metadata with OR groups', async () => {
         const { stdout, exitCode } = await run([
             '--html',
-            path.join(FIXTURES, 'metadata-prerequisites'),
+            path.join(FIXTURES, 'boolean-prerequisites'),
         ]);
         expect(exitCode).toBe(0);
         expect(stdout).toContain('<!DOCTYPE html>');
@@ -177,11 +177,14 @@ describe('E2E: HTML output', () => {
         expect(stdout).toContain('Prerequisites');
         // Required prerequisites should be present
         expect(stdout).toContain('Splunk Enterprise System Administration');
+        // OR group options should be present
         expect(stdout).toContain('Troubleshooting Splunk Enterprise');
-        expect(stdout).toContain('Splunk Enterprise Cluster Administration');
-        // Required intro text should be present
+        expect(stdout).toContain('Architecting Splunk Enterprise Deployments');
+        expect(stdout).toContain('Splunk Enterprise Data Administration');
+        expect(stdout).toContain('Additionally, complete one of the following');
+        // Updated intro text should be present
         expect(stdout).toContain(
-            'To be successful, students must have completed these Splunk Education course(s) or possess equivalent working knowledge',
+            'To be successful, students must have completed the following',
         );
         // Optional prerequisites should be present
         expect(stdout).toContain('Linux chops');

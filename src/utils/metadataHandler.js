@@ -134,15 +134,57 @@ export function generatePrerequisitesMarkdown(metadata) {
     }
 
     const lines = ['## Prerequisites', ''];
+    const flattenCourseEntries = (courseItem) => {
+        if (typeof courseItem === 'string') {
+            return [courseItem];
+        }
 
-    // Add required prerequisite courses
+        if (Array.isArray(courseItem)) {
+            return courseItem.flatMap((nestedCourseItem) => flattenCourseEntries(nestedCourseItem));
+        }
+
+        return [];
+    };
+    const prerequisiteItems = prerequisites.courses;
+    const requiredCourses = prerequisiteItems.filter((courseItem) => typeof courseItem === 'string');
+    const courseOptionGroups = prerequisiteItems.filter(Array.isArray);
+
     lines.push(
-        'To be successful, students must have completed these Splunk Education course(s) or possess equivalent working knowledge:',
+        'To be successful, students must have completed the following',
+        'Splunk Education course(s) or have equivalent working',
+        'knowledge:',
     );
-    lines.push('');
-    prerequisites.courses.forEach((course) => {
-        lines.push(`- ${course}`);
-    });
+
+    if (requiredCourses.length > 0) {
+        lines.push('');
+        requiredCourses.forEach((course) => {
+            lines.push(`- ${course}`);
+        });
+    }
+
+    if (courseOptionGroups.length > 0) {
+        courseOptionGroups.forEach((courseOptions, groupIndex) => {
+            lines.push('');
+            if (requiredCourses.length > 0) {
+                lines.push(
+                    courseOptionGroups.length === 1
+                        ? 'Additionally, complete one of the following:'
+                        : `Additionally, complete one of the following (Group ${groupIndex + 1}):`,
+                );
+            } else {
+                lines.push(
+                    courseOptionGroups.length === 1
+                        ? 'Complete one of the following:'
+                        : `Complete one of the following (Group ${groupIndex + 1}):`,
+                );
+            }
+            lines.push('');
+            const flattenedCourseOptions = flattenCourseEntries(courseOptions);
+            flattenedCourseOptions.forEach((course) => {
+                lines.push(`- ${course}`);
+            });
+        });
+    }
 
     // Add competencies if present
     if (prerequisites.competencies && prerequisites.competencies.length > 0) {

@@ -6,6 +6,10 @@ const fixturesDir = path.join(__dirname, 'fixtures');
 
 const fixtures = [
     {
+        name: 'boolean-prerequisites',
+        files: ['metaprereqs-course-description.md', 'manifest.json'],
+    },
+    {
         name: 'custom-input',
         files: ['custom-filename.md', 'manifest.json'],
     },
