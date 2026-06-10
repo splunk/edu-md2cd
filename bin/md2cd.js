@@ -17,9 +17,18 @@ program
     .option('-o, --output <dir>', 'specify output directory for flat mode')
     .option('-t, --theme <name>', 'override theme (e.g., cisco, splunk-edu)')
     .option('-d, --dry-run', 'list files that would be converted without generating output')
-    .option('-H, --html', 'output generated HTML to console instead of PDF');
+    .option('-H, --html', 'output generated HTML to console instead of PDF')
+    .option(
+        '-m, --migrate <format>',
+        'output format for migrated legacy metadata: json or yaml (default: yaml)',
+    );
 
 program.action(async (sourceDir = '.', options) => {
+    if (options.migrate && !['json', 'yaml'].includes(options.migrate)) {
+        console.error(`❌ Invalid --migrate format: "${options.migrate}". Use json or yaml.`);
+        process.exit(1);
+    }
+
     // If --output is used, require a sourceDir argument (not default '.')
     if (options.output && (!sourceDir || sourceDir === '.' || sourceDir === undefined)) {
         console.error(

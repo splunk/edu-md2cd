@@ -1,15 +1,38 @@
 {
   "metadata": {
+    "projectId": "PROJ-1234",
     "courseId": "1234",
-    "courseTitle": "Locale JP Course",
-    "slug": "locale-jp-course",
-    "description": "Cluster fun!",
-    "courseDeveloper": ["Buttercup Pwny", "Splunk EDU"],
-    "modality": "ILT",
-    "duration": "13.5 hours",
+    "lmsId": "EDU-1234",
+    "courseTitle": "Example Course Title",
+    "slug": "example-course",
+    "description": "Brief course description.",
+    "courseDeveloper": ["Course Developer", "Splunk EDU"],
+    "format": [
+      {
+        "mode": "Instructor-led training",
+        "duration": "13.5 hours"
+      },
+      {
+        "mode": "eLearning",
+        "duration": "5 hours"
+      }
+    ],
     "roles": {
       "customer": ["sysadmin", "power user"],
       "internal": ["professional services", "sales engineer"]
+    },
+    "prerequisites": {
+      "courses": [
+        "Splunk Enterprise System Administration",
+        [
+          "Troubleshooting Splunk Enterprise",
+          "Splunk Enterprise Cluster Administration"
+        ]
+      ],
+      "competencies": [
+        "Linux administration",
+        "Networking fundamentals"
+      ]
     },
     "ga": "2025-11-01",
     "updated": "2026-01-21",
@@ -30,15 +53,16 @@
     }
   ],
   "input": {
+    "courseDescription": "./README.md",
     "labGuides": "./lab-guides",
     "static": "./static",
-    "readme": "./ILT-README.md",
-    "courseDescription": "./README.md"
+    "readme": "./ILT-README.md"
   },
   "output": {
+    "theme": "splunk-edu",
     "destination": "./dist",
     "pdfs": {
-      "courseDescription": "locale-jp-course-guide.pdf"
+      "courseDescription": "example-course-guide.pdf"
     }
   }
 }

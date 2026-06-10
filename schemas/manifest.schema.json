@@ -54,6 +54,15 @@
           ],
           "description": "Course developer name(s)"
         },
+        "modality": {
+          "type": "string",
+          "enum": ["Instructor-led training", "eLearning", "eLearning with lab exercises", "Blended", "Lab experience"],
+          "description": "Legacy course delivery mode. Use 'format' array for new manifests."
+        },
+        "duration": {
+          "type": "string",
+          "description": "Legacy course duration (e.g., '13.5 hours'). Use 'format' array for new manifests."
+        },
         "format": {
           "type": "array",
           "items": {
@@ -92,7 +101,6 @@
         },
         "prerequisites": {
           "type": "object",
-          "required": ["courses", "competencies"],
           "properties": {
             "courses": {
               "type": "array",
@@ -189,6 +197,18 @@
         "courseDescription": {
           "type": "string",
           "description": "Custom path to course description markdown file"
+        },
+        "labGuides": {
+          "type": "string",
+          "description": "Path to lab guides directory"
+        },
+        "static": {
+          "type": "string",
+          "description": "Path to static assets directory"
+        },
+        "readme": {
+          "type": "string",
+          "description": "Path to custom README file"
         }
       }
     },

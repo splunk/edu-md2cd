@@ -17,7 +17,9 @@ export class LoadStage extends Stage {
 
         try {
             // Load and merge metadata.json (required) + manifest.json (optional)
-            const manifest = await loadMetadataAndManifest(context.sourceDir);
+            const manifest = await loadMetadataAndManifest(context.sourceDir, {
+                migrateFormat: context.options.migrate || 'yaml',
+            });
             context.manifest = manifest;
             context.metadata = manifest.metadata;
 

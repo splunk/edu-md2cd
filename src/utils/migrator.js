@@ -187,14 +187,15 @@ function mapYamlToManifest(metadata) {
 }
 
 /**
- * Migrate metadata.yaml to manifest.json format
+ * Migrate metadata.yaml to manifest format
  *
  * @param {string} metadataPath - Path to metadata.yaml or metadata.yml
  * @param {string} coursePath - Course directory path
  * @param {Object} logger - Logger instance
+ * @param {'json'|'yaml'} [format='yaml'] - Output format for migrated files
  * @returns {Promise<Object>} Migrated manifest object
  */
-export async function migrateMetadata(metadataPath, coursePath, logger) {
+export async function migrateMetadata(metadataPath, coursePath, logger, format = 'yaml') {
     logger.info('🔄 Migrating legacy configuration...');
 
     // Read and parse YAML
@@ -217,22 +218,33 @@ export async function migrateMetadata(metadataPath, coursePath, logger) {
     // Separate metadata from any non-metadata fields (input/output from legacy YAML)
     const { metadata: metadataObj, ...manifestRest } = manifest;
 
-    // Write metadata.yaml (the required metadata file — YAML is the default format)
-    const metadataYamlPath = resolve(coursePath, 'metadata.yaml');
-    await writeFile(metadataYamlPath, stringifyYaml({ metadata: metadataObj }));
+    const isJson = format === 'json';
+    const metadataExt = isJson ? '.json' : '.yaml';
+    const metadataOutPath = resolve(coursePath, `metadata${metadataExt}`);
 
-    // Write manifest.yaml only when there are non-metadata fields to preserve
+    if (isJson) {
+        await writeFile(metadataOutPath, JSON.stringify({ metadata: metadataObj }, null, 2) + '\n');
+    } else {
+        await writeFile(metadataOutPath, stringifyYaml({ metadata: metadataObj }));
+    }
+
+    // Write manifest file only when there are non-metadata fields to preserve
     if (Object.keys(manifestRest).length > 0) {
-        const manifestYamlPath = resolve(coursePath, 'manifest.yaml');
-        await writeFile(manifestYamlPath, stringifyYaml(manifestRest));
+        const manifestExt = isJson ? '.json' : '.yaml';
+        const manifestOutPath = resolve(coursePath, `manifest${manifestExt}`);
+        if (isJson) {
+            await writeFile(manifestOutPath, JSON.stringify(manifestRest, null, 2) + '\n');
+        } else {
+            await writeFile(manifestOutPath, stringifyYaml(manifestRest));
+        }
     }
 
     // Inform user about migration
-    logger.info('✓ Created metadata.yaml');
+    logger.info(`✓ Created metadata${metadataExt}`);
     logger.warn('');
     logger.warn('metadata.yaml (legacy schema) is deprecated');
-    logger.warn('   Your course has been migrated to metadata.yaml (new schema)');
-    logger.warn('   Please review and commit metadata.yaml to your repository');
+    logger.warn(`   Your course has been migrated to metadata${metadataExt} (new schema)`);
+    logger.warn(`   Please review and commit metadata${metadataExt} to your repository`);
     logger.warn('   The old legacy metadata file can be safely deleted');
     logger.warn('');
 

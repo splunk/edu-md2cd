@@ -165,23 +165,13 @@ export function generatePrerequisitesMarkdown(metadata) {
     if (courseOptionGroups.length > 0) {
         courseOptionGroups.forEach((courseOptions, groupIndex) => {
             lines.push('');
-            if (requiredCourses.length > 0) {
-                lines.push(
-                    courseOptionGroups.length === 1
-                        ? 'Additionally, complete one of the following:'
-                        : `Additionally, complete one of the following (Group ${groupIndex + 1}):`,
-                );
-            } else {
-                lines.push(
-                    courseOptionGroups.length === 1
-                        ? 'Complete one of the following:'
-                        : `Complete one of the following (Group ${groupIndex + 1}):`,
-                );
-            }
-            lines.push('');
+            const label = (requiredCourses.length > 0 || groupIndex > 0)
+                ? 'Additionally, complete one of the following:'
+                : 'Complete one of the following:';
+            lines.push(`- ${label}`);
             const flattenedCourseOptions = flattenCourseEntries(courseOptions);
             flattenedCourseOptions.forEach((course) => {
-                lines.push(`- ${course}`);
+                lines.push(`  - ${course}`);
             });
         });
     }
@@ -229,7 +219,7 @@ function parseFileContent(filePath, content) {
  * @param {string} sourceDir - Course directory to search
  * @returns {Promise<{filePath: string, data: Object}>} Resolved path and parsed object
  */
-async function findAndLoadMetadata(sourceDir) {
+async function findAndLoadMetadata(sourceDir, migrateFormat = 'yaml') {
     for (const candidate of METADATA_CANDIDATES) {
         const filePath = path.join(sourceDir, candidate);
         try {
@@ -243,10 +233,11 @@ async function findAndLoadMetadata(sourceDir) {
 
         // Detect legacy YAML: new-schema files always have a top-level `metadata` key
         if (!parsed.metadata) {
-            logger.info(`📦 Found legacy ${candidate}, migrating to metadata.yaml...`);
-            await migrateMetadata(filePath, sourceDir, logger);
-            // Reload the freshly written metadata.yaml
-            const migratedPath = path.join(sourceDir, 'metadata.yaml');
+            const outExt = migrateFormat === 'json' ? '.json' : '.yaml';
+            logger.info(`📦 Found legacy ${candidate}, migrating to metadata${outExt}...`);
+            await migrateMetadata(filePath, sourceDir, logger, migrateFormat);
+            // Reload the freshly written metadata file
+            const migratedPath = path.join(sourceDir, `metadata${outExt}`);
             const migratedRaw = await fs.readFile(migratedPath, 'utf8');
             return { filePath: migratedPath, data: parseFileContent(migratedPath, migratedRaw) };
         }
@@ -297,13 +288,15 @@ export async function getMetadataFilePath(sourceDir) {
  * Load metadata (required) and manifest (optional) for a course directory,
  * merging them into a single combined object. Supports JSON and YAML for
  * both files. Legacy metadata.yaml (no `metadata:` key) is migrated
- * automatically to metadata.yaml using the new schema.
+ * automatically using the new schema.
  *
  * @param {string} sourceDir - Course directory to load from
+ * @param {object} [options]
+ * @param {'json'|'yaml'} [options.migrateFormat='yaml'] - Format for migrated output files
  * @returns {Promise<Object>} Merged manifest object
  */
-export async function loadMetadataAndManifest(sourceDir) {
-    const { filePath: metadataFilePath, data: metadataFile } = await findAndLoadMetadata(sourceDir);
+export async function loadMetadataAndManifest(sourceDir, { migrateFormat = 'yaml' } = {}) {
+    const { filePath: metadataFilePath, data: metadataFile } = await findAndLoadMetadata(sourceDir, migrateFormat);
 
     // Pad course IDs if needed
     if (metadataFile.metadata?.course_id) {
@@ -321,10 +314,14 @@ export async function loadMetadataAndManifest(sourceDir) {
     // Optionally load manifest (JSON or YAML)
     const manifestFile = await findAndLoadManifest(sourceDir);
 
-    // Merge: metadata file provides `metadata`; manifest provides everything else
+    // Merge: metadata file provides `metadata` plus any top-level build config
+    // (output, input, plugins, etc.). A separate manifest.json/yaml overrides
+    // anything from the metadata file; `metadata` always comes from the metadata file.
+    const { metadata: metadataSection, ...metadataFileConfig } = metadataFile;
     return {
+        ...metadataFileConfig,
         ...manifestFile,
-        metadata: metadataFile.metadata,
+        metadata: metadataSection,
     };
 }
 

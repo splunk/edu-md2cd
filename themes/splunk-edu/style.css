@@ -98,6 +98,10 @@ li {
     font-size: 12px;
 }
 
+li li {
+    list-style-type: circle;
+}
+
 .two-col {
     display: flex;
     align-items: flex-start;
