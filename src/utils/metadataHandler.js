@@ -165,23 +165,13 @@ export function generatePrerequisitesMarkdown(metadata) {
     if (courseOptionGroups.length > 0) {
         courseOptionGroups.forEach((courseOptions, groupIndex) => {
             lines.push('');
-            if (requiredCourses.length > 0) {
-                lines.push(
-                    courseOptionGroups.length === 1
-                        ? 'Additionally, complete one of the following:'
-                        : `Additionally, complete one of the following (Group ${groupIndex + 1}):`,
-                );
-            } else {
-                lines.push(
-                    courseOptionGroups.length === 1
-                        ? 'Complete one of the following:'
-                        : `Complete one of the following (Group ${groupIndex + 1}):`,
-                );
-            }
-            lines.push('');
+            const label = (requiredCourses.length > 0 || groupIndex > 0)
+                ? 'Additionally, complete one of the following:'
+                : 'Complete one of the following:';
+            lines.push(`- ${label}`);
             const flattenedCourseOptions = flattenCourseEntries(courseOptions);
             flattenedCourseOptions.forEach((course) => {
-                lines.push(`- ${course}`);
+                lines.push(`  - ${course}`);
             });
         });
     }

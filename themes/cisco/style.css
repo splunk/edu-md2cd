@@ -134,6 +134,10 @@ li {
     list-style-type: disc;
 }
 
+li li {
+    list-style-type: circle;
+}
+
 .two-col {
     display: flex;
     align-items: flex-start;

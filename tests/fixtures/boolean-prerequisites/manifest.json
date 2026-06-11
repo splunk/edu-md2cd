@@ -14,7 +14,6 @@
     },
     "prerequisites": {
       "courses": [
-        "Splunk Enterprise System Administration",
         [
         "Troubleshooting Splunk Enterprise",
         "Architecting Splunk Enterprise Deployments"
