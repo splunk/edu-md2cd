@@ -137,23 +137,25 @@ function mapYamlToManifest(metadata) {
     }
 
     // Add optional metadata fields if present
+    // Map format/modality string + duration → new format array of objects
     if (metadata.format || metadata.modality) {
-        const modalityValue = metadata.modality || metadata.format;
-        manifest.metadata.modality = normalizeModality(modalityValue);
+        const modeString = metadata.modality || metadata.format;
+        manifest.metadata.format = [
+            {
+                mode: normalizeModality(typeof modeString === 'string' ? modeString : String(modeString)),
+                ...(metadata.duration !== undefined && { duration: String(metadata.duration) }),
+            },
+        ];
+    } else if (metadata.duration) {
+        manifest.metadata.format = [{ duration: String(metadata.duration) }];
     }
 
-    if (metadata.duration) {
-        manifest.metadata.duration = metadata.duration;
-    }
-
-    // Map audience to new object structure
+    // Map audience to new roles structure (customer/internal)
     if (metadata.audience) {
         const flattened = flattenAudience(metadata.audience);
         if (flattened && flattened.length > 0) {
-            manifest.metadata.audience = {
-                role: flattened,
-                internal: [],
-                external: [],
+            manifest.metadata.roles = {
+                customer: flattened,
             };
         }
     }

@@ -1,24 +1,22 @@
 {
-  "metadata": {
-    "projectId": "PROJ-123",
-    "courseTitle": "Using projectId only",
-    "slug": "project-only",
-    "description": "Testing with projectId but no courseId",
-    "courseDeveloper": ["Test Developer"],
-    "format": [
-      {
-        "mode": "eLearning",
-        "duration": "5 hours"
-      }
-    ],
-    "roles": {
-      "customer": ["admin"]
-    },
-    "splunk": {
-      "platform": {
-        "deployment": "Cloud",
-        "version": "10.2.1"
-      }
+  "projectId": "PROJ-123",
+  "courseTitle": "Using projectId only",
+  "slug": "project-only",
+  "description": "Testing with projectId but no courseId",
+  "courseDeveloper": ["Test Developer"],
+  "format": [
+    {
+      "mode": "eLearning",
+      "duration": "5 hours"
+    }
+  ],
+  "roles": {
+    "customer": ["admin"]
+  },
+  "splunk": {
+    "platform": {
+      "deployment": "Cloud",
+      "version": "10.2.1"
     }
   }
 }

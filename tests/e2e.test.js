@@ -106,8 +106,10 @@ describe('E2E: manifest migration', () => {
         expect(metadata.metadata.courseId).toBe('1001');
         expect(metadata.metadata.courseTitle).toBe('Splunk Cloud Administration');
         expect(metadata.metadata.slug).toBe('sca');
-        expect(metadata.metadata.modality).toBe('Instructor-led training');
-        expect(metadata.metadata.duration).toBe('18 hr');
+        expect(Array.isArray(metadata.metadata.format)).toBe(true);
+        expect(metadata.metadata.format[0].mode).toBe('Instructor-led training');
+        expect(metadata.metadata.format[0].duration).toBe('18 hr');
+        expect(Array.isArray(metadata.metadata.roles.customer)).toBe(true);
     });
 });
 

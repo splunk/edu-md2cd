@@ -1,8 +1,8 @@
-courseId: '1001'
-courseTitle: 'Splunk Cloud Administration'
+course_id: '1001'
+course_title: 'Splunk Cloud Administration'
 slug: 'sca'
 version: '9.4'
-courseDeveloper: 'Splunk EDU'
+course_developer: 'Splunk EDU'
 format: 'Instructor-Led Training'
 duration: '18 hr'
 audience:

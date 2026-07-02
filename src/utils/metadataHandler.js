@@ -231,8 +231,17 @@ async function findAndLoadMetadata(sourceDir, migrateFormat = 'yaml') {
         const raw = await fs.readFile(filePath, 'utf8');
         const parsed = parseFileContent(filePath, raw);
 
-        // Detect legacy YAML: new-schema files always have a top-level `metadata` key
-        if (!parsed.metadata) {
+        // Schema detection:
+        //   - has `metadata:` wrapper  → already normalized (old intermediate or migrated)
+        //   - snake_case at root       → truly legacy (course_id / course_title) → migrate
+        //   - camelCase at root        → new flat schema → wrap internally
+        const hasWrapper = !!parsed.metadata;
+        const isLegacy =
+            !hasWrapper &&
+            (parsed.course_id !== undefined || parsed.course_title !== undefined);
+        const isNewFlat = !hasWrapper && !isLegacy;
+
+        if (isLegacy) {
             const outExt = migrateFormat === 'json' ? '.json' : '.yaml';
             logger.info(`📦 Found legacy ${candidate}, migrating to metadata${outExt}...`);
             await migrateMetadata(filePath, sourceDir, logger, migrateFormat);
@@ -240,6 +249,11 @@ async function findAndLoadMetadata(sourceDir, migrateFormat = 'yaml') {
             const migratedPath = path.join(sourceDir, `metadata${outExt}`);
             const migratedRaw = await fs.readFile(migratedPath, 'utf8');
             return { filePath: migratedPath, data: parseFileContent(migratedPath, migratedRaw) };
+        }
+
+        if (isNewFlat) {
+            // New flat camelCase schema (no metadata: wrapper) — wrap for internal use
+            return { filePath, data: { metadata: parsed } };
         }
 
         return { filePath, data: parsed };
