@@ -102,6 +102,10 @@ li li {
     list-style-type: circle;
 }
 
+li li {
+    list-style-type: circle;
+}
+
 .two-col {
     display: flex;
     align-items: flex-start;
