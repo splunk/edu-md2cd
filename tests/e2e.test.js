@@ -55,6 +55,18 @@ describe('E2E: dry-run mode', () => {
         expect(exitCode).toBe(0);
         expect(stderr).toContain('Will generate PDF');
         expect(stderr).toContain('1234');
+        expect(stderr).toContain('Theme: cisco');
+    });
+
+    it('manifest-yaml: loads yaml manifest with the same runtime features as manifest.json', async () => {
+        const { stderr, exitCode } = await run(['--dry-run', path.join(FIXTURES, 'manifest-yaml')]);
+        expect(exitCode).toBe(0);
+        expect(stderr).toContain('Loading manifest');
+        expect(stderr).toContain('manifest.yaml');
+        expect(stderr).toContain('Found 1 plugin(s)');
+        expect(stderr).toContain('Theme: cisco');
+        expect(stderr).toContain('Will generate PDF');
+        expect(stderr).toContain('manifest-yaml');
     });
 
     it('recursive-flat/foundation: loads manifest', async () => {
@@ -82,6 +94,8 @@ describe('E2E: dry-run mode', () => {
 
 describe('E2E: manifest migration', () => {
     const migrationDir = path.join(FIXTURES, 'manifest-migration');
+    const sourceMetadata = path.join(migrationDir, 'metadata.yml');
+    const legacyMetadata = path.join(migrationDir, 'metadata.yml.legacy');
     const generatedMetadata = path.join(migrationDir, 'metadata.yaml');
     const generatedManifest = path.join(migrationDir, 'manifest.yaml');
 
@@ -90,26 +104,34 @@ describe('E2E: manifest migration', () => {
         for (const f of [generatedMetadata, generatedManifest]) {
             try { await fs.unlink(f); } catch { /* ignore */ }
         }
+
+        try {
+            await fs.rename(legacyMetadata, sourceMetadata);
+        } catch {
+            /* ignore */
+        }
     });
 
-    it('migrates legacy metadata.yaml and creates metadata.yaml (new schema)', async () => {
-        // Run the tool — migration will create metadata.yaml (new schema)
+    it('migrates legacy metadata.yaml and creates flat metadata.yaml', async () => {
+        // Run the tool — migration will create metadata.yaml in the current YAML schema
         await run(['--dry-run', migrationDir]);
 
         // Verify metadata.yaml was created
         const stat = await fs.stat(generatedMetadata);
         expect(stat.isFile()).toBe(true);
+        const legacyStat = await fs.stat(legacyMetadata);
+        expect(legacyStat.isFile()).toBe(true);
 
         // Verify migrated content is correct
         const { parse } = await import('yaml');
         const metadata = parse(await fs.readFile(generatedMetadata, 'utf8'));
-        expect(metadata.metadata.courseId).toBe('1001');
-        expect(metadata.metadata.courseTitle).toBe('Splunk Cloud Administration');
-        expect(metadata.metadata.slug).toBe('sca');
-        expect(Array.isArray(metadata.metadata.format)).toBe(true);
-        expect(metadata.metadata.format[0].mode).toBe('Instructor-led training');
-        expect(metadata.metadata.format[0].duration).toBe('18 hr');
-        expect(Array.isArray(metadata.metadata.roles.customer)).toBe(true);
+        expect(metadata.courseId).toBe('1001');
+        expect(metadata.courseTitle).toBe('Splunk Cloud Administration');
+        expect(metadata.slug).toBe('sca');
+        expect(Array.isArray(metadata.format)).toBe(true);
+        expect(metadata.format[0].mode).toBe('Instructor-led training');
+        expect(metadata.format[0].duration).toBe('18 hours');
+        expect(Array.isArray(metadata.roles.customer)).toBe(true);
     });
 });
 
@@ -163,6 +185,14 @@ describe('E2E: HTML output', () => {
         expect(exitCode).toBe(0);
         expect(stdout).toContain('<!DOCTYPE html>');
         // Cisco theme CSS should be embedded
+        expect(stdout).toContain('Cisco');
+    });
+
+    it('manifest-yaml: generates HTML using yaml-manifest input, plugin, and theme settings', async () => {
+        const { stdout, exitCode } = await run(['--html', path.join(FIXTURES, 'manifest-yaml')]);
+        expect(exitCode).toBe(0);
+        expect(stdout).toContain('<!DOCTYPE html>');
+        expect(stdout).toContain('Custom Input via YAML Manifest');
         expect(stdout).toContain('Cisco');
     });
 

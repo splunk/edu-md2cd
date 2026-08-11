@@ -1,0 +1,13 @@
+input:
+  courseDescription: ./custom-filename.md
+output:
+  destination: ./custom-output
+  render:
+    theme: cisco
+  pdfs:
+    courseDescription: yaml-manifest-output.pdf
+plugins:
+  - name: locale-jp
+    translations:
+      audience: 対象者
+      duration: 時間

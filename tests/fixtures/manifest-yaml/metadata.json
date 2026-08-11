@@ -1,0 +1,29 @@
+{
+  "projectId": "PROJ-2026",
+  "courseId": "manifest-yaml",
+  "courseTitle": "Manifest YAML Support",
+  "slug": "manifest-yaml-support",
+  "description": "Manifest YAML parity fixture.",
+  "courseDeveloper": [
+    "Splunk EDU"
+  ],
+  "format": [
+    {
+      "mode": "eLearning",
+      "duration": "5 hours"
+    }
+  ],
+  "roles": {
+    "customer": [
+      "sysadmin"
+    ],
+    "internal": []
+  },
+  "updated": "2026-08-11",
+  "splunk": {
+    "platform": {
+      "deployment": "Cloud",
+      "version": "10.2.1"
+    }
+  }
+}

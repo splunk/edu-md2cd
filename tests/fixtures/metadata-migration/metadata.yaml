@@ -1,0 +1,16 @@
+courseId: metadata-migration
+courseTitle: Migrating Legacy Metadata Schemas
+slug: migrating_legacy_metadata_schemas
+courseDeveloper: Splunk EDU
+format:
+  - mode: Instructor-led training
+    duration: 9 hours
+roles:
+  customer:
+    - Splunk administrators
+ga: 2026-07-01
+updated: 2026-07-27
+splunk:
+  platform:
+    deployment: ""
+    version: "10.2"

@@ -1,5 +1,7 @@
 {
   "output": {
-    "theme": "cisco"
+    "render": {
+      "theme": "cisco"
+    }
   }
 }

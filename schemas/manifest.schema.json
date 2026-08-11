@@ -34,6 +34,10 @@
           "minLength": 1,
           "description": "Full course title"
         },
+        "version": {
+          "type": "string",
+          "description": "Legacy course version (e.g., '1.0.0', '9.4'). Prefer metadata.splunk.platform.version for new manifests."
+        },
         "slug": {
           "type": "string",
           "pattern": "^[a-z0-9_-]+$",
@@ -79,7 +83,8 @@
                 "pattern": "^(1(\\.0+)? hour|(0(\\.\\d+)?|([2-9]|[1-9]\\d+)(\\.\\d+)?|1\\.\\d*[1-9]\\d*) hours)$",
                 "description": "Course duration (e.g., '1 hour', '5 hours', '13.5 hours'). Use 'hour' for values <= 1, 'hours' for values > 1"
               }
-            }
+            },
+            "additionalProperties": false
           },
           "minItems": 1,
           "description": "Course formats with mode and optional duration"
@@ -97,7 +102,14 @@
               "items": { "type": "string" },
               "description": "Internal audience segments"
             }
-          }
+          },
+          "additionalProperties": false
+        },
+        "audience": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Legacy audience field. Prefer metadata.roles.customer."
         },
         "prerequisites": {
           "type": "object",
@@ -164,7 +176,8 @@
               }
             }
           }
-        }
+        },
+        "additionalProperties": true
       }
     },
     "plugins": {
@@ -185,7 +198,8 @@
                 "description": "Key-value pairs for translation overrides",
                 "additionalProperties": { "type": "string" }
               }
-            }
+            },
+            "additionalProperties": false
           }
         ]
       },
@@ -199,8 +213,18 @@
           "description": "Custom path to course description markdown file"
         },
         "labGuides": {
-          "type": "string",
-          "description": "Path to lab guides directory"
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Path to a single lab guides directory"
+            },
+            {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "description": "Paths to multiple lab guide directories or sub-manifest files"
+            }
+          ]
         },
         "static": {
           "type": "string",
@@ -217,11 +241,39 @@
       "properties": {
         "theme": {
           "type": "string",
-          "description": "Theme name (defaults to 'splunk-edu')"
+          "description": "Deprecated theme field. Prefer output.render.theme."
         },
         "destination": {
           "type": "string",
           "description": "Custom output directory path"
+        },
+        "render": {
+          "type": "object",
+          "properties": {
+            "theme": {
+              "type": "string",
+              "description": "Theme name (defaults to 'splunk-edu')"
+            },
+            "code": {
+              "type": "object",
+              "properties": {
+                "theme": {
+                  "type": "string",
+                  "description": "Code highlighting theme name"
+                },
+                "lineNumbers": {
+                  "type": "boolean",
+                  "description": "Show line numbers in code blocks"
+                },
+                "spl": {
+                  "type": "boolean",
+                  "description": "Enable SPL syntax highlighting"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
         },
         "pdfs": {
           "type": "object",
@@ -292,7 +344,9 @@
             }
           }
         }
-      }
+      },
+      "additionalProperties": true
     }
-  }
+  },
+  "additionalProperties": true
 }

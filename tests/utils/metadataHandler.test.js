@@ -1,5 +1,103 @@
-import { describe, expect, it } from 'vitest';
-import { generatePrerequisitesMarkdown } from '../../src/utils/metadataHandler.js';
+import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
+import { afterEach, describe, expect, it } from 'vitest';
+import {
+    generatePrerequisitesMarkdown,
+    loadMetadataAndManifest,
+} from '../../src/utils/metadataHandler.js';
+
+const tempDirs = [];
+
+async function makeTempCourseDir() {
+    const tempDirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'md2cd-metadata-handler-'));
+    tempDirs.push(tempDirPath);
+    return tempDirPath;
+}
+
+afterEach(async () => {
+    await Promise.all(
+        tempDirs.splice(0).map((tempDirPath) => fs.rm(tempDirPath, { recursive: true, force: true }))
+    );
+});
+
+describe('loadMetadataAndManifest', () => {
+    it('loads flat metadata.yaml without a top-level metadata wrapper', async () => {
+        const courseDirPath = await makeTempCourseDir();
+
+        await fs.writeFile(
+            path.join(courseDirPath, 'metadata.yaml'),
+            [
+                'courseId: 26-0065',
+                'courseTitle: Lab Guide - Administering ES',
+                'slug: lab_guide_administering_es',
+                'format:',
+                '  - mode: Instructor-led training',
+                '    duration: 13.5 hours',
+                'splunk:',
+                '  platform:',
+                "    deployment: ''",
+                '    version: ES 8.6',
+                '',
+            ].join('\n')
+        );
+
+        const manifest = await loadMetadataAndManifest(courseDirPath);
+
+        expect(manifest.metadata.courseId).toBe('26-0065');
+        expect(manifest.metadata.courseTitle).toBe('Lab Guide - Administering ES');
+        expect(manifest.metadata.format).toEqual([
+            { mode: 'Instructor-led training', duration: '13.5 hours' },
+        ]);
+        expect(manifest.metadata.splunk.platform.version).toBe('ES 8.6');
+    });
+
+    it('merges flat metadata.yaml with manifest.yaml config overrides', async () => {
+        const courseDirPath = await makeTempCourseDir();
+
+        await fs.writeFile(
+            path.join(courseDirPath, 'metadata.yaml'),
+            [
+                'courseId: 1234',
+                'courseTitle: Splunk Cloud Administration',
+                'format:',
+                '  - mode: eLearning',
+                '    duration: 5 hours',
+                'splunk:',
+                '  platform:',
+                "    deployment: ''",
+                '    version: 9.4',
+                '',
+            ].join('\n')
+        );
+
+        await fs.writeFile(
+            path.join(courseDirPath, 'manifest.yaml'),
+            [
+                'input:',
+                '  courseDescription: ./custom-filename.md',
+                'output:',
+                '  destination: custom-output',
+                '  render:',
+                '    theme: cisco',
+                '  pdfs:',
+                '    courseDescription: custom-filename.pdf',
+                'plugins:',
+                '  - locale-jp',
+                '',
+            ].join('\n')
+        );
+
+        const manifest = await loadMetadataAndManifest(courseDirPath);
+
+        expect(manifest.metadata.courseId).toBe('1234');
+        expect(manifest.input.courseDescription).toBe('./custom-filename.md');
+        expect(manifest.output.destination).toBe('custom-output');
+        expect(manifest.output.render.theme).toBe('cisco');
+        expect(manifest.output.pdfs.courseDescription).toBe('custom-filename.pdf');
+        expect(manifest.plugins).toEqual(['locale-jp']);
+    });
+});
 
 describe('generatePrerequisitesMarkdown', () => {
     const baseMetadata = {

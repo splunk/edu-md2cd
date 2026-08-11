@@ -1,8 +1,33 @@
 // src/utils/migrator.js
-import { readFile, writeFile } from 'fs/promises';
-import { resolve } from 'path';
+import { readFile, rename, rm, writeFile } from 'fs/promises';
+import { basename, dirname, resolve } from 'path';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { generateSlug } from './slugger.js';
+
+/**
+ * Normalizes duration strings to the schema-compatible hour/hours format.
+ *
+ * @param {string} duration - Legacy duration string
+ * @returns {string|undefined} Normalized duration or original value when it cannot be parsed
+ */
+export function normalizeDuration(duration) {
+    if (!duration || typeof duration !== 'string') {
+        return duration;
+    }
+
+    const durationMatch = duration.match(/^\s*([\d.]+)\s*/);
+    if (!durationMatch || !durationMatch[1]) {
+        return duration;
+    }
+
+    const numericDuration = Number(durationMatch[1]);
+    if (Number.isNaN(numericDuration)) {
+        return duration;
+    }
+
+    const unit = numericDuration <= 1 ? 'hour' : 'hours';
+    return `${durationMatch[1]} ${unit}`;
+}
 
 /**
  * Remove duplicates from array
@@ -13,6 +38,47 @@ import { generateSlug } from './slugger.js';
 function deduplicateArray(array) {
     if (!Array.isArray(array)) return undefined;
     return [...new Set(array)];
+}
+
+/**
+ * Detects whether a parsed metadata file uses the legacy snake_case schema.
+ *
+ * @param {Object} rawMetadata - Parsed metadata file content
+ * @returns {boolean} True when the legacy schema is detected
+ */
+export function isLegacySchema(rawMetadata) {
+    return (
+        rawMetadata !== null &&
+        typeof rawMetadata === 'object' &&
+        (rawMetadata.course_id !== undefined || rawMetadata.course_title !== undefined)
+    );
+}
+
+/**
+ * Detects a redundant top-level metadata wrapper in YAML metadata files.
+ *
+ * @param {Object} rawMetadata - Parsed metadata file content
+ * @returns {boolean} True when a redundant metadata wrapper is present
+ */
+export function hasRedundantMetadataWrapper(rawMetadata) {
+    return (
+        rawMetadata !== null &&
+        typeof rawMetadata === 'object' &&
+        rawMetadata.metadata !== null &&
+        typeof rawMetadata.metadata === 'object' &&
+        !Array.isArray(rawMetadata.metadata)
+    );
+}
+
+/**
+ * Promotes a redundant top-level metadata wrapper to the root object.
+ *
+ * @param {Object} rawMetadata - Parsed metadata file content
+ * @returns {Object} Unwrapped metadata object
+ */
+export function unwrapRedundantMetadata(rawMetadata) {
+    const { metadata, ...remainingConfig } = rawMetadata;
+    return { ...metadata, ...remainingConfig };
 }
 
 /**
@@ -79,28 +145,34 @@ function mapLegacyOutputFormats(legacyFormats) {
  * @param {Object|Array} audience - Legacy audience structure
  * @returns {Array<string>} Flattened audience array
  */
-function flattenAudience(audience) {
+function mapAudienceToRoles(audience) {
     if (Array.isArray(audience)) {
-        return deduplicateArray(audience);
+        return {
+            customer: deduplicateArray(audience),
+        };
     }
 
     if (typeof audience === 'object' && audience !== null) {
-        const flattened = [];
+        const customerRoles = deduplicateArray([
+            ...(Array.isArray(audience.role) ? audience.role : []),
+            ...(Array.isArray(audience.external) ? audience.external : []),
+        ]);
+        const internalRoles = deduplicateArray(
+            Array.isArray(audience.internal) ? audience.internal : []
+        );
+        const roles = {};
 
-        if (Array.isArray(audience.role)) {
-            flattened.push(...audience.role);
+        if (customerRoles && customerRoles.length > 0) {
+            roles.customer = customerRoles;
         }
-        if (Array.isArray(audience.internal)) {
-            flattened.push(...audience.internal);
-        }
-        if (Array.isArray(audience.external)) {
-            flattened.push(...audience.external);
+        if (internalRoles && internalRoles.length > 0) {
+            roles.internal = internalRoles;
         }
 
-        return deduplicateArray(flattened);
+        return roles;
     }
 
-    return [];
+    return {};
 }
 
 /**
@@ -109,10 +181,13 @@ function flattenAudience(audience) {
  * @param {Object} metadata - Parsed metadata.yaml object
  * @returns {Object} Manifest.json structure
  */
-function mapYamlToManifest(metadata) {
+export function buildManifestFromLegacy(metadata) {
     const manifest = {
         metadata: {
-            courseId: metadata.course_id || metadata.courseId || 'unknown',
+            courseId:
+                metadata.course_id !== undefined
+                    ? String(metadata.course_id).padStart(4, '0')
+                    : metadata.courseId || 'unknown',
             courseTitle: metadata.course_title || metadata.courseTitle || 'Untitled Course',
         },
     };
@@ -143,20 +218,20 @@ function mapYamlToManifest(metadata) {
         manifest.metadata.format = [
             {
                 mode: normalizeModality(typeof modeString === 'string' ? modeString : String(modeString)),
-                ...(metadata.duration !== undefined && { duration: String(metadata.duration) }),
+                ...(metadata.duration !== undefined && {
+                    duration: normalizeDuration(String(metadata.duration)),
+                }),
             },
         ];
     } else if (metadata.duration) {
-        manifest.metadata.format = [{ duration: String(metadata.duration) }];
+        manifest.metadata.format = [{ duration: normalizeDuration(String(metadata.duration)) }];
     }
 
     // Map audience to new roles structure (customer/internal)
     if (metadata.audience) {
-        const flattened = flattenAudience(metadata.audience);
-        if (flattened && flattened.length > 0) {
-            manifest.metadata.roles = {
-                customer: flattened,
-            };
+        const roles = mapAudienceToRoles(metadata.audience);
+        if (Object.keys(roles).length > 0) {
+            manifest.metadata.roles = roles;
         }
     }
 
@@ -189,6 +264,51 @@ function mapYamlToManifest(metadata) {
 }
 
 /**
+ * Generate YAML output for migrated metadata or manifest files.
+ *
+ * @param {Object} manifest - Object to serialize
+ * @returns {string} YAML string
+ */
+export function serializeManifestAsYaml(manifest) {
+    return stringifyYaml(manifest);
+}
+
+/**
+ * Generate JSON output for migrated metadata or manifest files.
+ *
+ * @param {Object} manifest - Object to serialize
+ * @returns {string} JSON string
+ */
+export function serializeManifestAsJson(manifest) {
+    return JSON.stringify(manifest, null, 2) + '\n';
+}
+
+/**
+ * Preserve the original legacy metadata file and write the migrated metadata file.
+ *
+ * @param {string} metadataPath - Original metadata file path
+ * @param {Object} metadataObject - Migrated metadata object to write
+ * @param {'json'|'yaml'} [format='yaml'] - Output format for the migrated file
+ * @returns {Promise<string>} Path to the new canonical metadata file
+ */
+export async function writeMigratedMetadataFile(metadataPath, metadataObject, format = 'yaml') {
+    const metadataExt = format === 'json' ? '.json' : '.yaml';
+    const metadataOutPath = resolve(dirname(metadataPath), `metadata${metadataExt}`);
+    const legacyPath = `${metadataPath}.legacy`;
+
+    await rm(legacyPath, { force: true });
+    await rename(metadataPath, legacyPath);
+
+    const serializedMetadata =
+        format === 'json'
+            ? serializeManifestAsJson({ metadata: metadataObject })
+            : serializeManifestAsYaml(metadataObject);
+    await writeFile(metadataOutPath, serializedMetadata);
+
+    return metadataOutPath;
+}
+
+/**
  * Migrate metadata.yaml to manifest format
  *
  * @param {string} metadataPath - Path to metadata.yaml or metadata.yml
@@ -214,40 +334,37 @@ export async function migrateMetadata(metadataPath, coursePath, logger, format =
         );
     }
 
+    if (hasRedundantMetadataWrapper(metadata)) {
+        metadata = unwrapRedundantMetadata(metadata);
+    }
+
     // Map metadata.yaml fields to manifest.json structure
-    const manifest = mapYamlToManifest(metadata);
+    const manifest = buildManifestFromLegacy(metadata);
 
     // Separate metadata from any non-metadata fields (input/output from legacy YAML)
     const { metadata: metadataObj, ...manifestRest } = manifest;
 
     const isJson = format === 'json';
-    const metadataExt = isJson ? '.json' : '.yaml';
-    const metadataOutPath = resolve(coursePath, `metadata${metadataExt}`);
-
-    if (isJson) {
-        await writeFile(metadataOutPath, JSON.stringify({ metadata: metadataObj }, null, 2) + '\n');
-    } else {
-        await writeFile(metadataOutPath, stringifyYaml({ metadata: metadataObj }));
-    }
+    const metadataOutPath = await writeMigratedMetadataFile(metadataPath, metadataObj, format);
 
     // Write manifest file only when there are non-metadata fields to preserve
     if (Object.keys(manifestRest).length > 0) {
         const manifestExt = isJson ? '.json' : '.yaml';
         const manifestOutPath = resolve(coursePath, `manifest${manifestExt}`);
         if (isJson) {
-            await writeFile(manifestOutPath, JSON.stringify(manifestRest, null, 2) + '\n');
+            await writeFile(manifestOutPath, serializeManifestAsJson(manifestRest));
         } else {
-            await writeFile(manifestOutPath, stringifyYaml(manifestRest));
+            await writeFile(manifestOutPath, serializeManifestAsYaml(manifestRest));
         }
     }
 
     // Inform user about migration
-    logger.info(`✓ Created metadata${metadataExt}`);
+    logger.info(`✓ Created ${basename(metadataOutPath)}`);
     logger.warn('');
     logger.warn('metadata.yaml (legacy schema) is deprecated');
-    logger.warn(`   Your course has been migrated to metadata${metadataExt} (new schema)`);
-    logger.warn(`   Please review and commit metadata${metadataExt} to your repository`);
-    logger.warn('   The old legacy metadata file can be safely deleted');
+    logger.warn(`   Original preserved as: ${basename(metadataPath)}.legacy`);
+    logger.warn(`   Your course has been migrated to ${basename(metadataOutPath)} (new schema)`);
+    logger.warn(`   Please review and commit ${basename(metadataOutPath)} to your repository`);
     logger.warn('');
 
     return manifest;

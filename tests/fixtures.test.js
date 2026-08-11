@@ -26,6 +26,10 @@ const fixtures = [
         files: ['course-description.md', 'metadata.yml'],
     },
     {
+        name: 'manifest-yaml',
+        files: ['custom-filename.md', 'metadata.json', 'manifest.yaml'],
+    },
+    {
         name: 'recursive-flat/advanced',
         files: ['advanced-course-description.md', 'metadata.json'],
     },

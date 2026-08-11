@@ -3,7 +3,7 @@
 Use `@splunk-edu/md2cd` to convert course descriptions written in Markdown to PDFs. This guide is divided into two sections: 
 
 * Using the CLI
-* Using `manifest.json`
+* Using a manifest file
 
 
 ## Using the Markdown template
@@ -15,7 +15,7 @@ This tool expects to find this comment in the Markdown template:
 
 Read it and heed it! 
 
-The prerequisites and the callout box featuring Format, Duration and Audience are generated from the metadata in your `manifest.json` file. The tool searches for this comment and renders these elements directly below it. If you remove this comment, your render will fail. If you move this comment, you'll break the design. 
+The prerequisites and the callout box featuring Format, Duration and Audience are generated from the metadata in your manifest file. The tool searches for this comment and renders these elements directly below it. If you remove this comment, your render will fail. If you move this comment, you'll break the design. 
 
 
 ## Using the CLI 
@@ -114,16 +114,16 @@ md2cd -rft cisco path/to/course/repo
 ```
 
 
-## Using manifest.json
+## Using manifest.json or manifest.yaml
 
-We are migrating away from `metadata.yaml` files to `manifest.json` files. This new format allows us to customize use of the tool while easily catching syntax errors. In the context of `md2cd`, the `manifest.json` uses four top-level objects:
+We are migrating away from legacy `metadata.yaml`-only configuration toward a split metadata and manifest model. You can define the manifest in either `manifest.json` or `manifest.yaml`; both support the same top-level configuration. In the context of `md2cd`, the manifest uses four top-level objects:
 
 * `metadata`: Course metadata. Required.
 * `input`: Custom input configurations. 
 * `output`: Custom output configurations. 
 * `plugins`: Additional functionality 
 
-Here's an example
+Here is a JSON example:
 
 ```json
 {
@@ -162,7 +162,9 @@ Here's an example
     "pdfs": {
       "courseDescription": "custom-output-course-description.pdf"
     },
-    "theme": "cisco"
+    "render": {
+      "theme": "cisco"
+    }
   },
   "plugins": [
     {
@@ -174,6 +176,26 @@ Here's an example
     }
   ]
 ```
+
+The same manifest can be written in YAML with the same functionality:
+
+```yaml
+input:
+  courseDescription: ./custom-input.md
+output:
+  destination: ./custom
+  render:
+    theme: cisco
+  pdfs:
+    courseDescription: custom-output-course-description.pdf
+plugins:
+  - name: locale-jp
+    translations:
+      audience: Splunkクラウド管理者
+      duration: 18時間
+```
+
+Legacy `metadata.yaml` files that use the old snake_case schema can still be migrated, but custom inputs, outputs, plugins, and themes belong in a manifest file. You can store that manifest in either `manifest.json` or `manifest.yaml`.
 
 
 ## Environment Variables
@@ -192,11 +214,6 @@ The `md2cd` tool supports the following environment variables:
   # Unix/macOS
   NO_EMOJI=1 npx md2cd ./
   ```
-
-
-## Using metadata.yaml
-
-The tool features a yaml-to-json migrator that will convert your existing `metadata.yaml` file to a `manifest.json` file. It's not backwards compatible, though, so you can't use the configurations availalable in the `manifest.json` in your `metadata.yaml`. If you want to use custom inputs and outputs, plugins, and themes, you will need to use a `manifest.json` file. 
 
 
 ## Specifying prerequisites
@@ -307,12 +324,16 @@ You must specify an output for each format listed in your metadata and the modes
 
 ## Using themes
 
-The `md2cd` tool uses the Splunk EDU theme by default. You can override this by specifying a `theme` in the `output` object: 
+The `md2cd` tool uses the Splunk EDU theme by default. You can override this by specifying a theme in `output.render.theme`: 
 ```json
   "output": {
-    "theme": "cisco"
+    "render": {
+      "theme": "cisco"
+    }
   }
 ```
+
+The older `output.theme` field is still supported for backward compatibility.
 
 
 ## Using plugins

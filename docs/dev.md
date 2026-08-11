@@ -1,6 +1,6 @@
-# Theme System Architecture Guide
+# README (DEV)
 
-## Overview
+## Theme System Architecture Guide
 
 This document outlines the theme system architecture used in the md2cd tool. The theme system provides visual branding and styling for PDF outputs through a modular, configuration-driven approach that separates presentation from content.
 

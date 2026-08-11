@@ -43,6 +43,9 @@ export class LoadStage extends Stage {
             if (context.options.theme) {
                 context.theme = context.options.theme;
                 logger.info(`  Theme: ${context.theme} (CLI override)`);
+            } else if (manifest.output?.render?.theme) {
+                context.theme = manifest.output.render.theme;
+                logger.info(`  Theme: ${context.theme}`);
             } else if (manifest.output?.theme) {
                 context.theme = manifest.output.theme;
                 logger.info(`  Theme: ${context.theme}`);

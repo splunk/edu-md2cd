@@ -210,9 +210,49 @@ function parseFileContent(filePath, content) {
 }
 
 /**
+ * Normalize parsed metadata files to the internal manifest shape.
+ * JSON metadata remains wrapped under `metadata`, while YAML metadata is
+ * treated as flat top-level course metadata.
+ *
+ * @param {string} filePath - Source metadata file path
+ * @param {Object} parsed - Parsed file content
+ * @returns {{data: Object, isLegacy: boolean}} Normalized metadata and legacy flag
+ */
+function normalizeMetadataFile(filePath, parsed) {
+    const isJson = filePath.endsWith('.json');
+
+    if (isJson) {
+        const hasWrapper = !!parsed.metadata;
+        const isLegacy = !hasWrapper && (parsed.course_id !== undefined || parsed.course_title !== undefined);
+
+        if (hasWrapper) {
+            return { data: parsed, isLegacy: false };
+        }
+
+        return { data: { metadata: parsed }, isLegacy };
+    }
+
+    const hasWrapper = !!parsed.metadata;
+    const yamlMetadata = hasWrapper ? parsed.metadata : parsed;
+    const configOverrides = { ...parsed };
+    if (hasWrapper) {
+        delete configOverrides.metadata;
+    }
+    const isLegacy = yamlMetadata.course_id !== undefined || yamlMetadata.course_title !== undefined;
+
+    return {
+        data: {
+            ...configOverrides,
+            metadata: yamlMetadata,
+        },
+        isLegacy,
+    };
+}
+
+/**
  * Find and load the metadata file (metadata.json/.yaml/.yml) for a course
- * directory. If a YAML file is found but uses the legacy schema (no top-level
- * `metadata:` key), it is migrated to metadata.yaml before loading.
+ * directory. If a file uses the legacy snake_case schema, it is migrated to the
+ * configured metadata format before loading.
  *
  * metadata.json is checked first; YAML variants are fallbacks.
  *
@@ -231,15 +271,7 @@ async function findAndLoadMetadata(sourceDir, migrateFormat = 'yaml') {
         const raw = await fs.readFile(filePath, 'utf8');
         const parsed = parseFileContent(filePath, raw);
 
-        // Schema detection:
-        //   - has `metadata:` wrapper  → already normalized (old intermediate or migrated)
-        //   - snake_case at root       → truly legacy (course_id / course_title) → migrate
-        //   - camelCase at root        → new flat schema → wrap internally
-        const hasWrapper = !!parsed.metadata;
-        const isLegacy =
-            !hasWrapper &&
-            (parsed.course_id !== undefined || parsed.course_title !== undefined);
-        const isNewFlat = !hasWrapper && !isLegacy;
+        const { data: normalizedData, isLegacy } = normalizeMetadataFile(filePath, parsed);
 
         if (isLegacy) {
             const outExt = migrateFormat === 'json' ? '.json' : '.yaml';
@@ -248,15 +280,12 @@ async function findAndLoadMetadata(sourceDir, migrateFormat = 'yaml') {
             // Reload the freshly written metadata file
             const migratedPath = path.join(sourceDir, `metadata${outExt}`);
             const migratedRaw = await fs.readFile(migratedPath, 'utf8');
-            return { filePath: migratedPath, data: parseFileContent(migratedPath, migratedRaw) };
+            const migratedParsed = parseFileContent(migratedPath, migratedRaw);
+            const { data: migratedData } = normalizeMetadataFile(migratedPath, migratedParsed);
+            return { filePath: migratedPath, data: migratedData };
         }
 
-        if (isNewFlat) {
-            // New flat camelCase schema (no metadata: wrapper) — wrap for internal use
-            return { filePath, data: { metadata: parsed } };
-        }
-
-        return { filePath, data: parsed };
+        return { filePath, data: normalizedData };
     }
 
     logger.error('No metadata.json or metadata.yaml/yml found');
@@ -301,8 +330,8 @@ export async function getMetadataFilePath(sourceDir) {
 /**
  * Load metadata (required) and manifest (optional) for a course directory,
  * merging them into a single combined object. Supports JSON and YAML for
- * both files. Legacy metadata.yaml (no `metadata:` key) is migrated
- * automatically using the new schema.
+ * both files. YAML metadata files are flat at the top level and normalized to
+ * the internal manifest shape automatically.
  *
  * @param {string} sourceDir - Course directory to load from
  * @param {object} [options]
