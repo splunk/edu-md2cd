@@ -42,6 +42,8 @@ function deduplicateArray(array) {
 
 /**
  * Detects whether a parsed metadata file uses the legacy snake_case schema.
+ * New-schema files may be wrapped (`metadata:`) or flat (camelCase fields at
+ * the root); either form must take precedence over a stray snake_case field.
  *
  * @param {Object} rawMetadata - Parsed metadata file content
  * @returns {boolean} True when the legacy schema is detected
@@ -50,6 +52,9 @@ export function isLegacySchema(rawMetadata) {
     return (
         rawMetadata !== null &&
         typeof rawMetadata === 'object' &&
+        !rawMetadata.metadata &&
+        rawMetadata.courseId === undefined &&
+        rawMetadata.courseTitle === undefined &&
         (rawMetadata.course_id !== undefined || rawMetadata.course_title !== undefined)
     );
 }

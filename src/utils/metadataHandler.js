@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import logger from './logger.js';
-import { migrateMetadata } from './migrator.js';
+import { isLegacySchema, migrateMetadata } from './migrator.js';
 
 export function getCourseTitle(metadata) {
     // Support manifest.json (courseTitle or title) and legacy YAML (course_title)
@@ -223,13 +223,12 @@ function normalizeMetadataFile(filePath, parsed) {
 
     if (isJson) {
         const hasWrapper = !!parsed.metadata;
-        const isLegacy = !hasWrapper && (parsed.course_id !== undefined || parsed.course_title !== undefined);
 
         if (hasWrapper) {
             return { data: parsed, isLegacy: false };
         }
 
-        return { data: { metadata: parsed }, isLegacy };
+        return { data: { metadata: parsed }, isLegacy: isLegacySchema(parsed) };
     }
 
     const hasWrapper = !!parsed.metadata;
@@ -238,7 +237,7 @@ function normalizeMetadataFile(filePath, parsed) {
     if (hasWrapper) {
         delete configOverrides.metadata;
     }
-    const isLegacy = yamlMetadata.course_id !== undefined || yamlMetadata.course_title !== undefined;
+    const isLegacy = isLegacySchema(yamlMetadata);
 
     return {
         data: {
@@ -375,11 +374,23 @@ export const getMetadataPath = getMetadataFilePath;
 export const loadMetadata = loadMetadataAndManifest;
 
 export async function updateMetadataDate(metadataPath, metadata, updatedDate) {
-    if (metadata.course_id) {
-        metadata.course_id = metadata.course_id.toString().padStart(4, '0');
-    }
+    const hasWrapper = !!metadata.metadata;
+    const isFlatNewSchema =
+        !hasWrapper && (metadata.courseId !== undefined || metadata.courseTitle !== undefined);
 
-    metadata.updated = updatedDate;
+    if (hasWrapper) {
+        // Wrapped new schema (`metadata: {...}`) - update inside the wrapper
+        metadata.metadata.updated = updatedDate;
+    } else if (isFlatNewSchema) {
+        // Flat new schema (camelCase fields at root) - update at the root only
+        metadata.updated = updatedDate;
+    } else {
+        // Truly legacy schema - safe to touch snake_case fields
+        if (metadata.course_id) {
+            metadata.course_id = metadata.course_id.toString().padStart(4, '0');
+        }
+        metadata.updated = updatedDate;
+    }
 
     const newYaml = stringifyYaml(metadata);
     await fs.writeFile(metadataPath, newYaml, 'utf8');

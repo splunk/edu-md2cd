@@ -6,6 +6,7 @@ import { parse as parseYaml } from 'yaml';
 import {
     buildManifestFromLegacy,
     hasRedundantMetadataWrapper,
+    isLegacySchema,
     migrateMetadata,
     normalizeDuration,
     unwrapRedundantMetadata,
@@ -55,6 +56,49 @@ describe('metadata wrapper helpers', () => {
             course_title: 'Splunk Cloud Administration',
             output: ['cd'],
         });
+    });
+});
+
+describe('isLegacySchema', () => {
+    it('detects a genuinely legacy snake_case file', () => {
+        expect(
+            isLegacySchema({
+                course_id: '1001',
+                course_title: 'Splunk Cloud Administration',
+            })
+        ).toBe(true);
+    });
+
+    it('does not flag flat new-schema camelCase metadata as legacy', () => {
+        expect(
+            isLegacySchema({
+                courseId: '1001',
+                courseTitle: 'Splunk Cloud Administration',
+            })
+        ).toBe(false);
+    });
+
+    it('does not flag wrapped new-schema metadata as legacy', () => {
+        expect(
+            isLegacySchema({
+                metadata: {
+                    courseId: '1001',
+                    courseTitle: 'Splunk Cloud Administration',
+                },
+            })
+        ).toBe(false);
+    });
+
+    it('does not flag flat new-schema metadata as legacy even if a stray snake_case field is present', () => {
+        // Guards against a previous fix injecting course_id into a valid flat file
+        // and that stray field then being misdetected as legacy on a subsequent run.
+        expect(
+            isLegacySchema({
+                courseId: '1001',
+                courseTitle: 'Splunk Cloud Administration',
+                course_id: '1001',
+            })
+        ).toBe(false);
     });
 });
 

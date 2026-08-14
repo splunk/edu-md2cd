@@ -2,9 +2,11 @@ import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { parse as parseYaml } from 'yaml';
 import {
     generatePrerequisitesMarkdown,
     loadMetadataAndManifest,
+    updateMetadataDate,
 } from '../../src/utils/metadataHandler.js';
 
 const tempDirs = [];
@@ -96,6 +98,81 @@ describe('loadMetadataAndManifest', () => {
         expect(manifest.output.render.theme).toBe('cisco');
         expect(manifest.output.pdfs.courseDescription).toBe('custom-filename.pdf');
         expect(manifest.plugins).toEqual(['locale-jp']);
+    });
+
+    it('does not corrupt flat metadata.yaml when loaded twice in a row', async () => {
+        const courseDirPath = await makeTempCourseDir();
+        const metadataPath = path.join(courseDirPath, 'metadata.yaml');
+
+        await fs.writeFile(
+            metadataPath,
+            [
+                'courseId: 26-0065',
+                'courseTitle: Lab Guide - Administering ES',
+                'description: An ES lab guide',
+                'courseDeveloper: Splunk EDU',
+                'format:',
+                '  - mode: Instructor-led training',
+                '    duration: 13.5 hours',
+                'roles:',
+                '  customer:',
+                '    - Administrator',
+                '',
+            ].join('\n')
+        );
+
+        await loadMetadataAndManifest(courseDirPath);
+        await loadMetadataAndManifest(courseDirPath);
+
+        const onDisk = parseYaml(await fs.readFile(metadataPath, 'utf8'));
+        expect(onDisk.course_id).toBeUndefined();
+        expect(onDisk.courseTitle).toBe('Lab Guide - Administering ES');
+        expect(onDisk.description).toBe('An ES lab guide');
+        expect(onDisk.courseDeveloper).toBe('Splunk EDU');
+        expect(onDisk.roles).toEqual({ customer: ['Administrator'] });
+
+        await expect(fs.access(`${metadataPath}.legacy`)).rejects.toThrow();
+    });
+});
+
+describe('updateMetadataDate', () => {
+    it('updates the root `updated` field for flat new-schema metadata without injecting legacy fields', async () => {
+        const courseDirPath = await makeTempCourseDir();
+        const metadataPath = path.join(courseDirPath, 'metadata.yaml');
+        const metadata = { courseId: '1001', courseTitle: 'Splunk Cloud Administration' };
+
+        await updateMetadataDate(metadataPath, metadata, '2026-08-14');
+
+        const onDisk = parseYaml(await fs.readFile(metadataPath, 'utf8'));
+        expect(onDisk.updated).toBe('2026-08-14');
+        expect(onDisk.course_id).toBeUndefined();
+    });
+
+    it('updates the `updated` field inside the wrapper for wrapped new-schema metadata', async () => {
+        const courseDirPath = await makeTempCourseDir();
+        const metadataPath = path.join(courseDirPath, 'metadata.yaml');
+        const metadata = {
+            metadata: { courseId: '1001', courseTitle: 'Splunk Cloud Administration' },
+        };
+
+        await updateMetadataDate(metadataPath, metadata, '2026-08-14');
+
+        const onDisk = parseYaml(await fs.readFile(metadataPath, 'utf8'));
+        expect(onDisk.metadata.updated).toBe('2026-08-14');
+        expect(onDisk.updated).toBeUndefined();
+        expect(onDisk.course_id).toBeUndefined();
+    });
+
+    it('pads course_id for genuinely legacy snake_case metadata', async () => {
+        const courseDirPath = await makeTempCourseDir();
+        const metadataPath = path.join(courseDirPath, 'metadata.yaml');
+        const metadata = { course_id: '1001', course_title: 'Splunk Cloud Administration' };
+
+        await updateMetadataDate(metadataPath, metadata, '2026-08-14');
+
+        const onDisk = parseYaml(await fs.readFile(metadataPath, 'utf8'));
+        expect(onDisk.updated).toBe('2026-08-14');
+        expect(onDisk.course_id).toBe('1001');
     });
 });
 
