@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import logger from './logger.js';
-import { isLegacySchema, migrateMetadata } from './migrator.js';
+import { isLegacySchema, migrateMetadata, normalizeDateString } from './migrator.js';
 
 export function getCourseTitle(metadata) {
     // Support manifest.json (courseTitle or title) and legacy YAML (course_title)
@@ -374,28 +374,29 @@ export const getMetadataPath = getMetadataFilePath;
 export const loadMetadata = loadMetadataAndManifest;
 
 export async function updateMetadataDate(metadataPath, metadata, updatedDate) {
+    const normalizedDate = normalizeDateString(updatedDate);
     const hasWrapper = !!metadata.metadata;
     const isFlatNewSchema =
         !hasWrapper && (metadata.courseId !== undefined || metadata.courseTitle !== undefined);
 
     if (hasWrapper) {
         // Wrapped new schema (`metadata: {...}`) - update inside the wrapper
-        metadata.metadata.updated = updatedDate;
+        metadata.metadata.updated = normalizedDate;
     } else if (isFlatNewSchema) {
         // Flat new schema (camelCase fields at root) - update at the root only
-        metadata.updated = updatedDate;
+        metadata.updated = normalizedDate;
     } else {
         // Truly legacy schema - safe to touch snake_case fields
         if (metadata.course_id) {
             metadata.course_id = metadata.course_id.toString().padStart(4, '0');
         }
-        metadata.updated = updatedDate;
+        metadata.updated = normalizedDate;
     }
 
     const newYaml = stringifyYaml(metadata);
     await fs.writeFile(metadataPath, newYaml, 'utf8');
 
-    logger.info(`🏷️  Updating metadata.updated: ${updatedDate}`);
+    logger.info(`🏷️  Updating metadata.updated: ${normalizedDate}`);
 }
 
 export function getFormattedDate(input) {

@@ -41,6 +41,25 @@ function deduplicateArray(array) {
 }
 
 /**
+ * Normalizes a date-like value to a plain YYYY-MM-DD string. Guards against
+ * `Date` instances or over-precise ISO timestamps (e.g. `2026-08-06T00:00:00.000Z`)
+ * that may already be in memory from another tool or YAML parser that
+ * auto-resolves unquoted date scalars.
+ *
+ * @param {*} value - Candidate date value
+ * @returns {*} Normalized date string, or the original value if not date-like
+ */
+export function normalizeDateString(value) {
+    if (value instanceof Date) {
+        return value.toISOString().split('T')[0];
+    }
+    if (typeof value === 'string') {
+        return value.split('T')[0];
+    }
+    return value;
+}
+
+/**
  * Detects whether a parsed metadata file uses the legacy snake_case schema.
  * New-schema files may be wrapped (`metadata:`) or flat (camelCase fields at
  * the root); either form must take precedence over a stray snake_case field.
@@ -241,11 +260,11 @@ export function buildManifestFromLegacy(metadata) {
     }
 
     if (metadata.ga) {
-        manifest.metadata.ga = metadata.ga;
+        manifest.metadata.ga = normalizeDateString(metadata.ga);
     }
 
     if (metadata.updated) {
-        manifest.metadata.updated = metadata.updated;
+        manifest.metadata.updated = normalizeDateString(metadata.updated);
     }
 
     // Map version to splunk.platform structure

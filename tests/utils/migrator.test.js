@@ -8,6 +8,7 @@ import {
     hasRedundantMetadataWrapper,
     isLegacySchema,
     migrateMetadata,
+    normalizeDateString,
     normalizeDuration,
     unwrapRedundantMetadata,
 } from '../../src/utils/migrator.js';
@@ -37,6 +38,25 @@ describe('normalizeDuration', () => {
 
     it('returns unparseable values unchanged', () => {
         expect(normalizeDuration('half day')).toBe('half day');
+    });
+});
+
+describe('normalizeDateString', () => {
+    it('strips the time component from an over-precise ISO timestamp string', () => {
+        expect(normalizeDateString('2026-08-06T00:00:00.000Z')).toBe('2026-08-06');
+    });
+
+    it('converts a Date instance to a plain YYYY-MM-DD string', () => {
+        expect(normalizeDateString(new Date('2026-08-06T00:00:00.000Z'))).toBe('2026-08-06');
+    });
+
+    it('leaves an already-plain date string unchanged', () => {
+        expect(normalizeDateString('2026-08-06')).toBe('2026-08-06');
+    });
+
+    it('passes through non-date values unchanged', () => {
+        expect(normalizeDateString(undefined)).toBeUndefined();
+        expect(normalizeDateString(null)).toBeNull();
     });
 });
 
@@ -128,6 +148,18 @@ describe('buildManifestFromLegacy', () => {
         });
         expect(manifest.output.formats).toEqual(['cd']);
     });
+
+    it('normalizes over-precise updated/ga timestamps to plain YYYY-MM-DD strings', () => {
+        const manifest = buildManifestFromLegacy({
+            course_id: '1001',
+            course_title: 'Splunk Cloud Administration',
+            updated: '2026-08-06T00:00:00.000Z',
+            ga: new Date('2025-11-01T00:00:00.000Z'),
+        });
+
+        expect(manifest.metadata.updated).toBe('2026-08-06');
+        expect(manifest.metadata.ga).toBe('2025-11-01');
+    });
 });
 
 describe('migrateMetadata', () => {
@@ -176,5 +208,31 @@ describe('migrateMetadata', () => {
 
         const legacyMetadata = await fs.readFile(`${metadataPath}.legacy`, 'utf8');
         expect(legacyMetadata).toContain("course_id: '1001'");
+    });
+
+    it('round-trips an unquoted, over-precise updated date to a plain YYYY-MM-DD string', async () => {
+        const courseDirPath = await makeTempDir();
+        const metadataPath = path.join(courseDirPath, 'metadata.yml');
+
+        await fs.writeFile(
+            metadataPath,
+            [
+                'metadata:',
+                "  course_id: '1001'",
+                "  course_title: 'Splunk Cloud Administration'",
+                '  updated: 2026-08-06T00:00:00.000Z',
+                '',
+            ].join('\n')
+        );
+
+        const logger = { info() {}, warn() {}, error() {} };
+        await migrateMetadata(metadataPath, courseDirPath, logger, 'yaml');
+
+        const migratedMetadata = parseYaml(
+            await fs.readFile(path.join(courseDirPath, 'metadata.yaml'), 'utf8')
+        );
+
+        expect(migratedMetadata.updated).toBe('2026-08-06');
+        expect(typeof migratedMetadata.updated).toBe('string');
     });
 });
