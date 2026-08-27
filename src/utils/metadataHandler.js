@@ -20,6 +20,12 @@ export function getProjectId(metadata) {
     return projectId; // Returns undefined if not present
 }
 
+export function getCourseSlug(metadata) {
+    // Get URL-friendly course slug (optional field)
+    const slug = metadata?.metadata?.slug || metadata?.slug;
+    return slug; // Returns undefined if not present
+}
+
 export function getCourseId(metadata) {
     // Support manifest.json (courseId or id) and legacy YAML (course_id)
     const courseId = metadata?.metadata?.courseId || metadata?.metadata?.id || metadata?.course_id;

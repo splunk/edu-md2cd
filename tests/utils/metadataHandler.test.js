@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { parse as parseYaml } from 'yaml';
 import {
     generatePrerequisitesMarkdown,
+    getCourseSlug,
     loadMetadataAndManifest,
     updateMetadataDate,
 } from '../../src/utils/metadataHandler.js';
@@ -319,5 +320,25 @@ describe('generatePrerequisitesMarkdown', () => {
         expect(markdown).toContain('  - Troubleshooting Splunk Enterprise');
         expect(markdown).toContain('  - Architecting Splunk Enterprise Deployments');
         expect(markdown).toContain('  - Splunk Enterprise Data Administration');
+    });
+});
+
+describe('getCourseSlug', () => {
+    it('returns the slug from wrapped metadata', () => {
+        const metadata = { metadata: { courseTitle: 'Custom Output', slug: 'custom-output' } };
+
+        expect(getCourseSlug(metadata)).toBe('custom-output');
+    });
+
+    it('returns the slug from flat legacy metadata', () => {
+        const metadata = { slug: 'sca' };
+
+        expect(getCourseSlug(metadata)).toBe('sca');
+    });
+
+    it('returns undefined when no slug is defined', () => {
+        const metadata = { metadata: { courseTitle: 'No Slug Course' } };
+
+        expect(getCourseSlug(metadata)).toBeUndefined();
     });
 });

@@ -1,7 +1,7 @@
 import { Stage } from '../pipeline.js';
 import { generatePdf } from '../utils/renderPdf.js';
 import { ensurePDFDirectoryExists } from '../utils/fileHandler.js';
-import { getCourseTitle, slugify, getCourseFormats } from '../utils/metadataHandler.js';
+import { getCourseTitle, getCourseSlug, slugify, getCourseFormats } from '../utils/metadataHandler.js';
 import { buildFullHtml } from '../utils/buildHtml.js';
 import { convertToHtml } from '../utils/convertMarkdown.js';
 import logger from '../utils/logger.js';
@@ -202,8 +202,8 @@ export class BuildStage extends Stage {
      * @returns {string} Output filename
      */
     getOutputFilename(context, mode, formatIndex, totalFormats, customPdfConfig, formatStrategy) {
-        const courseTitle = getCourseTitle(context.manifest);
-        const slug = slugify(courseTitle);
+        // Prefer the manifest-defined slug; fall back to slugifying the course title
+        const slug = getCourseSlug(context.manifest) || slugify(getCourseTitle(context.manifest));
         const modeSlug = slugify(mode);
 
         // Handle object-based configuration
